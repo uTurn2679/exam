@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAdminExamsAction, createExamAction, deleteExamAction, updateExamAction } from "@/app/actions/examActions";
 import { getAuthSessionAction } from "@/app/actions/authActions";
-import { Plus, Eye, Edit3, Trash2, Users, FileText, ShieldCheck, Sparkles, ArrowRight, Lock, Upload, FileCheck, BookOpen } from "lucide-react";
+import { Plus, Edit3, Trash2, Users, FileText, ShieldCheck, Sparkles, ArrowRight, Lock, FileCheck, BookOpen, Layers, CheckSquare, Clock } from "lucide-react";
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<any[]>([]);
@@ -161,75 +161,113 @@ export default function AdminExamsPage() {
     );
   }
 
+  const totalSubmissions = exams.reduce((acc, curr) => acc + (curr._count?.submissions || 0), 0);
+  const publishedCount = exams.filter(e => e.isPublished).length;
+
   return (
     <div style={{ minHeight: "100vh", padding: "3rem 0" }}>
       <div className="container">
-        {/* Admin Header */}
+        {/* Admin Executive Header Banner */}
         <div className="hero-gradient" style={{
-          padding: "3rem 2.5rem",
+          padding: "3.5rem 2.5rem",
           color: "white",
           marginBottom: "3rem",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1.5rem"
+          flexDirection: "column",
+          gap: "1.75rem"
         }}>
-          <div>
-            <div style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              background: "rgba(129, 140, 248, 0.2)",
-              color: "#a5b4fc",
-              border: "1px solid rgba(129, 140, 248, 0.35)",
-              padding: "0.4rem 1rem",
-              borderRadius: "9999px",
-              fontSize: "0.85rem",
-              fontWeight: 700,
-              marginBottom: "1rem"
-            }}>
-              <ShieldCheck size={16} /> Admin Management Portal
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem", position: "relative", zIndex: 2 }}>
+            <div>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                background: "rgba(129, 140, 248, 0.2)",
+                color: "#a5b4fc",
+                border: "1px solid rgba(129, 140, 248, 0.35)",
+                padding: "0.4rem 1rem",
+                borderRadius: "9999px",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                marginBottom: "1rem"
+              }}>
+                <ShieldCheck size={16} /> Admin Management Portal
+              </div>
+
+              <h1 style={{ fontSize: "2.6rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", letterSpacing: "-0.03em" }}>
+                Exam Control & Assessment Dashboard
+              </h1>
+
+              <p style={{ color: "#cbd5e1", fontSize: "1.05rem", maxWidth: "620px", lineHeight: 1.6 }}>
+                Create subject-wise MCQ & CQ exams (Math, Physics, Higher Math, Chemistry), set countdown timers, and grade student submissions.
+              </p>
             </div>
 
-            <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", letterSpacing: "-0.02em" }}>
-              Exam Control & Grading Dashboard
-            </h1>
-
-            <p style={{ color: "#cbd5e1", fontSize: "1rem", maxWidth: "600px" }}>
-              Create subject-wise MCQ & CQ exams (Math, Physics, Higher Math, Chemistry), attach question papers, set strict countdown timers, and grade student answer papers.
-            </p>
+            {/* SINGLE CLEAN "CREATE EXAM" BUTTON */}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn"
+              style={{
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "white",
+                padding: "0.9rem 1.75rem",
+                borderRadius: "0.95rem",
+                fontWeight: 800,
+                fontSize: "0.95rem",
+                boxShadow: "0 12px 28px rgba(16, 185, 129, 0.45)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.6rem"
+              }}
+            >
+              <Plus size={22} /> Create New Exam
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="btn"
-            style={{
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              color: "white",
-              padding: "0.85rem 1.6rem",
-              borderRadius: "0.85rem",
-              fontWeight: 700,
-              boxShadow: "0 10px 25px rgba(16, 185, 129, 0.4)"
-            }}
-          >
-            <Plus size={20} /> Create New Subject Exam
-          </button>
+          {/* Admin Live Overview Metrics Bar */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", background: "rgba(255, 255, 255, 0.07)", padding: "1.25rem 1.75rem", borderRadius: "1.1rem", border: "1px solid rgba(255, 255, 255, 0.12)", position: "relative", zIndex: 2 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{ background: "rgba(99, 102, 241, 0.3)", padding: "0.6rem", borderRadius: "0.75rem", color: "#a5b4fc" }}>
+                <Layers size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>TOTAL EXAMS</span>
+                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "white" }}>{exams.length} Papers</div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{ background: "rgba(16, 185, 129, 0.3)", padding: "0.6rem", borderRadius: "0.75rem", color: "#34d399" }}>
+                <CheckSquare size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>ACTIVE PUBLISHED</span>
+                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "white" }}>{publishedCount} Active</div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{ background: "rgba(245, 158, 11, 0.3)", padding: "0.6rem", borderRadius: "0.75rem", color: "#fbbf24" }}>
+                <Users size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>SUBMISSIONS</span>
+                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "white" }}>{totalSubmissions} Papers</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Exams Grid List */}
         {exams.length === 0 ? (
-          <div className="glass-panel" style={{ padding: "4.5rem 2rem", textAlign: "center", border: "2px dashed #cbd5e1" }}>
+          <div className="glass-panel" style={{ padding: "4.5rem 2rem", textAlign: "center", border: "2px dashed #cbd5e1", borderRadius: "1.5rem" }}>
             <FileText size={48} color="#94a3b8" style={{ margin: "0 auto 1rem auto" }} />
-            <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>
+            <h3 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>
               No Exams Created Yet
             </h3>
-            <p style={{ color: "#64748b", marginBottom: "1.5rem" }}>
-              Click the button below to create your first subject assessment paper.
+            <p style={{ color: "#64748b", fontSize: "0.95rem" }}>
+              Use the <strong>"Create New Exam"</strong> button in the top banner to set up your first assessment paper.
             </p>
-            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
-              <Plus size={18} /> Create Exam Now
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -238,11 +276,12 @@ export default function AdminExamsPage() {
                 key={exam.id}
                 className="glass-panel"
                 style={{
-                  padding: "1.75rem",
+                  padding: "1.85rem",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  background: "white"
+                  background: "white",
+                  borderRadius: "1.25rem"
                 }}
               >
                 <div>
@@ -277,7 +316,7 @@ export default function AdminExamsPage() {
                     </span>
                   </div>
 
-                  <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem", letterSpacing: "-0.01em" }}>
+                  <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem", letterSpacing: "-0.01em" }}>
                     {exam.title}
                   </h3>
                   <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: "1.25rem", lineHeight: 1.5 }}>
@@ -324,7 +363,7 @@ export default function AdminExamsPage() {
 
         {/* Modal for Creating New Exam */}
         {showCreateModal && (
-          <div style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: "1rem" }}>
+          <div style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.75)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: "1rem" }}>
             <div className="glass-panel" style={{ background: "white", width: "100%", maxWidth: "640px", padding: "2.25rem", borderRadius: "1.5rem", maxHeight: "90vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#4f46e5", fontWeight: 700, fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "0.25rem" }}>
                 <Sparkles size={16} /> New Assessment Session
