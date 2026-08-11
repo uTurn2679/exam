@@ -6,8 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export type RegisterInput = {
-  name: string;
-  email: string;
+  name: string; // Username
   password: string;
   role?: "STUDENT" | "ADMIN";
 };
@@ -19,19 +18,23 @@ export async function registerUserAction(input: RegisterInput) {
       return { success: false, error: "Admin registration is disabled. Admin credentials are fixed." };
     }
 
-    const emailClean = input.email.trim().toLowerCase();
-    
+    const usernameClean = input.name.trim().toLowerCase();
+
+    if (!usernameClean || usernameClean.length < 2) {
+      return { success: false, error: "Username must be at least 2 characters long." };
+    }
+
     let existing = null;
     try {
-      existing = await prisma.user.findUnique({
-        where: { email: emailClean },
+      existing = await prisma.user.findFirst({
+        where: { name: { equals: usernameClean, mode: "insensitive" } },
       });
     } catch (e) {
       // Ignore DB read errors
     }
 
     if (existing) {
-      return { success: false, error: "An account with this email already exists." };
+      return { success: false, error: "This username is already registered. Please choose another username." };
     }
 
     let user = null;
@@ -39,24 +42,22 @@ export async function registerUserAction(input: RegisterInput) {
       user = await prisma.user.create({
         data: {
           name: input.name.trim(),
-          email: emailClean,
           password: input.password,
           role: "STUDENT",
         },
       });
     } catch (e) {
-      // Fallback for student account when DB is read-only
-      user = { id: "student_" + Date.now(), name: input.name.trim(), email: emailClean, role: "STUDENT" };
+      // Fallback for student account creation
+      user = { id: "user_" + Date.now(), name: input.name.trim(), role: "STUDENT" };
     }
 
     const cookieStore = await cookies();
     cookieStore.set("auth_session", user.id, { httpOnly: true, path: "/" });
     cookieStore.set("auth_user_name", user.name, { httpOnly: false, path: "/" });
-    cookieStore.set("auth_user_email", user.email, { httpOnly: false, path: "/" });
     cookieStore.set("auth_role", user.role, { httpOnly: false, path: "/" });
 
     revalidatePath("/");
-    return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+    return { success: true, user: { id: user.id, name: user.name, role: user.role } };
   } catch (error: any) {
     console.error("Registration error:", error);
     return { success: false, error: error?.message || "Failed to register account" };
@@ -64,59 +65,57 @@ export async function registerUserAction(input: RegisterInput) {
 }
 
 export type LoginInput = {
-  email: string; // Can be "habib@gmail.com" or "habib" or "22cseahsanhabib@gmail.com"
+  username: string; // Username
   password: string;
   targetRole?: "STUDENT" | "ADMIN";
 };
 
 export async function loginUserAction(input: LoginInput) {
   try {
-    const inputClean = input.email.trim().toLowerCase();
+    const inputClean = input.username.trim().toLowerCase();
     const isAdminAttempt =
       input.targetRole === "ADMIN" ||
-      inputClean === "habib@gmail.com" ||
       inputClean === "habib" ||
+      inputClean === "habib@gmail.com" ||
       inputClean === "22cseahsanhabib@gmail.com";
 
-    // 100% BULLETPROOF FIXED ADMIN LOGIN (No DB Query Required)
+    // 100% FIXED ADMIN LOGIN (Username: habib, Password: 267993)
     if (isAdminAttempt) {
-      const validAdminIdentifiers = ["habib@gmail.com", "habib", "22cseahsanhabib@gmail.com"];
-      if (validAdminIdentifiers.includes(inputClean) && input.password === "267993") {
+      const validAdminUsernames = ["habib", "habib@gmail.com", "22cseahsanhabib@gmail.com", "admin"];
+      if (validAdminUsernames.includes(inputClean) && input.password === "267993") {
         const cookieStore = await cookies();
         cookieStore.set("auth_session", "admin_fixed_id", { httpOnly: true, path: "/" });
         cookieStore.set("auth_user_name", "habib", { httpOnly: false, path: "/" });
-        cookieStore.set("auth_user_email", "habib@gmail.com", { httpOnly: false, path: "/" });
         cookieStore.set("auth_role", "ADMIN", { httpOnly: false, path: "/" });
 
         revalidatePath("/");
-        return { success: true, user: { id: "admin_fixed_id", name: "habib", email: "habib@gmail.com", role: "ADMIN" } };
+        return { success: true, user: { id: "admin_fixed_id", name: "habib", role: "ADMIN" } };
       } else {
-        return { success: false, error: "Invalid Admin email/username or password." };
+        return { success: false, error: "Invalid Admin username or password." };
       }
     }
 
-    // Student Login lookup
+    // Student Login lookup by Username (name)
     let user: any = null;
     try {
-      user = await prisma.user.findUnique({
-        where: { email: inputClean },
+      user = await prisma.user.findFirst({
+        where: { name: { equals: inputClean, mode: "insensitive" } },
       });
     } catch (e) {
       console.error("Database lookup error:", e);
     }
 
     if (!user || user.password !== input.password) {
-      return { success: false, error: "Invalid email or password." };
+      return { success: false, error: "Invalid username or password." };
     }
 
     const cookieStore = await cookies();
     cookieStore.set("auth_session", user.id, { httpOnly: true, path: "/" });
     cookieStore.set("auth_user_name", user.name, { httpOnly: false, path: "/" });
-    cookieStore.set("auth_user_email", user.email, { httpOnly: false, path: "/" });
     cookieStore.set("auth_role", user.role, { httpOnly: false, path: "/" });
 
     revalidatePath("/");
-    return { success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+    return { success: true, user: { id: user.id, name: user.name, role: user.role } };
   } catch (error: any) {
     return { success: false, error: error?.message || "Login failed" };
   }
@@ -137,7 +136,6 @@ export async function getAuthSessionAction() {
     const cookieStore = await cookies();
     const userId = cookieStore.get("auth_session")?.value;
     const name = cookieStore.get("auth_user_name")?.value;
-    const email = cookieStore.get("auth_user_email")?.value;
     const role = cookieStore.get("auth_role")?.value as "STUDENT" | "ADMIN" | undefined;
 
     if (!userId) return { isLoggedIn: false };
@@ -146,7 +144,7 @@ export async function getAuthSessionAction() {
 
     return {
       isLoggedIn: true,
-      user: { id: userId, name: displayName, email: email || "", role: role || "STUDENT" },
+      user: { id: userId, name: displayName, role: role || "STUDENT" },
     };
   } catch (error) {
     return { isLoggedIn: false };

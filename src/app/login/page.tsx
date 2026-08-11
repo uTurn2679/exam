@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { loginUserAction } from "@/app/actions/authActions";
-import { Lock, Mail, GraduationCap, ShieldCheck, ArrowRight, Sparkles, UserCheck } from "lucide-react";
+import { Lock, User, GraduationCap, ShieldCheck, ArrowRight, UserCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [roleTab, setRoleTab] = useState<"STUDENT" | "ADMIN">("STUDENT");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -20,7 +20,7 @@ export default function LoginPage() {
     setErrorMsg("");
 
     const res = await loginUserAction({
-      email,
+      username,
       password,
       targetRole: roleTab,
     });
@@ -62,7 +62,7 @@ export default function LoginPage() {
             Welcome Back
           </h1>
           <p style={{ color: "#64748b", fontSize: "0.95rem" }}>
-            Sign in to participate in exams or manage assessment papers
+            Sign in with Username & Password to enter exam portal
           </p>
         </div>
 
@@ -143,16 +143,16 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div>
             <label className="input-label">
-              {roleTab === "ADMIN" ? "Admin Username / Email *" : "Student Email Address *"}
+              {roleTab === "ADMIN" ? "Admin Username *" : "Username *"}
             </label>
             <div style={{ position: "relative" }}>
-              <Mail size={18} color="#94a3b8" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
+              <User size={18} color="#94a3b8" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
               <input
-                type={roleTab === "ADMIN" ? "text" : "email"}
+                type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={roleTab === "ADMIN" ? "habib@gmail.com" : "student@gmail.com"}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={roleTab === "ADMIN" ? "habib" : "enter username"}
                 className="input-field"
                 style={{ paddingLeft: "2.75rem" }}
               />
@@ -196,7 +196,7 @@ export default function LoginPage() {
         <div style={{ marginTop: "1.75rem", textAlign: "center", fontSize: "0.9rem", color: "#64748b" }}>
           Need a student account?{" "}
           <Link href="/register" style={{ color: "#4f46e5", fontWeight: 700, textDecoration: "underline" }}>
-            Register Student Account
+            Register Username & Password
           </Link>
         </div>
       </div>

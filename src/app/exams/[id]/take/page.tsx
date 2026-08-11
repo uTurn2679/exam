@@ -47,7 +47,6 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
         setStudentInfo((prev) => ({
           ...prev,
           name: authRes.user.name || "",
-          email: authRes.user.email || "",
         }));
       }
 
