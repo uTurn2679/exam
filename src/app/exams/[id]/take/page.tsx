@@ -91,6 +91,60 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
     setViewerTitle(title);
   };
 
+  const compressImageIfNeeded = async (file: File): Promise<File> => {
+    if (!file.type.startsWith("image/")) return file;
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1800; // 1800px max dimension ensures high clarity for reading text
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const compressedFile = new File([blob], file.name, {
+                    type: "image/jpeg",
+                    lastModified: Date.now(),
+                  });
+                  resolve(compressedFile);
+                } else {
+                  resolve(file);
+                }
+              },
+              "image/jpeg",
+              0.82
+            );
+          } else {
+            resolve(file);
+          }
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleMultipleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -103,11 +157,12 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
     setUploadingAnswerFile(true);
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const data = new FormData();
-      data.append("file", file);
-
+      const rawFile = files[i];
       try {
+        const fileToUpload = await compressImageIfNeeded(rawFile);
+        const data = new FormData();
+        data.append("file", fileToUpload);
+
         const res = await fetch("/api/upload", {
           method: "POST",
           body: data,
@@ -115,9 +170,12 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
         const result = await res.json();
         if (result.success && result.url) {
           setUploadedFiles((prev) => [...prev, result.url]);
+        } else {
+          alert(`Failed to upload ${rawFile.name}: ${result.error || "Upload error"}`);
         }
       } catch (err: any) {
         console.error("Upload error:", err);
+        alert(`Error uploading ${rawFile.name}: ${err?.message || "Connection error"}`);
       }
     }
     setUploadingAnswerFile(false);
