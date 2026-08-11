@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { logoutUserAction } from "@/app/actions/authActions";
-import { GraduationCap, ShieldCheck, LogIn, UserPlus, LogOut, User as UserIcon, Sparkles, History, Home } from "lucide-react";
+import { GraduationCap, ShieldCheck, LogIn, UserPlus, LogOut, Sparkles, History, Home } from "lucide-react";
 
 export default async function Navbar() {
   const cookieStore = await cookies();
   const isLoggedIn = !!cookieStore.get("auth_session")?.value;
-  const userName = cookieStore.get("auth_user_name")?.value;
   const role = cookieStore.get("auth_role")?.value;
   const isAdmin = role === "ADMIN";
 
@@ -48,7 +47,7 @@ export default async function Navbar() {
           </div>
         </Link>
 
-        {/* 📱 HORIZONTAL SINGLE LINE NAVBAR WRAPPER */}
+        {/* 📱 SINGLE LINE NAVBAR ITEMS (Without Profile) */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "nowrap", overflowX: "auto", paddingBottom: "0.1rem", WebkitOverflowScrolling: "touch" }}>
           
           {/* Home Link */}
@@ -70,51 +69,30 @@ export default async function Navbar() {
             </Link>
           )}
 
-          {/* Signed In State: Profile & Exit */}
+          {/* Signed In State: Exit */}
           {isLoggedIn ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "nowrap" }}>
-              {/* Profile Link */}
-              <Link
-                href="/profile"
-                className="btn btn-outline"
+            <form action={logoutUserAction} style={{ display: "inline" }}>
+              <button
+                type="submit"
                 style={{
-                  padding: "0.45rem 0.8rem",
-                  fontSize: "0.825rem",
+                  background: "#fef2f2",
+                  color: "#dc2626",
+                  border: "1px solid #fecaca",
+                  padding: "0.45rem 0.85rem",
                   borderRadius: "0.7rem",
-                  borderColor: "#818cf8",
-                  background: "#f5f3ff",
-                  color: "#3730a3",
+                  fontSize: "0.825rem",
                   fontWeight: 700,
-                  minHeight: "38px"
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.3rem",
+                  minHeight: "38px",
+                  transition: "all 0.2s ease"
                 }}
               >
-                <UserIcon size={15} color="#4f46e5" /> {userName || "Profile"}
-              </Link>
-
-              {/* Logout Button */}
-              <form action={logoutUserAction} style={{ display: "inline" }}>
-                <button
-                  type="submit"
-                  style={{
-                    background: "#fef2f2",
-                    color: "#dc2626",
-                    border: "1px solid #fecaca",
-                    padding: "0.45rem 0.75rem",
-                    borderRadius: "0.7rem",
-                    fontSize: "0.825rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.3rem",
-                    minHeight: "38px",
-                    transition: "all 0.2s ease"
-                  }}
-                >
-                  <LogOut size={14} /> Exit
-                </button>
-              </form>
-            </div>
+                <LogOut size={14} /> Exit
+              </button>
+            </form>
           ) : (
             /* Signed Out State: Sign In & Sign Up in ONE Single Line */
             <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "nowrap" }}>
