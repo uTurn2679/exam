@@ -1,180 +1,203 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { loginUserAction } from "@/app/actions/authActions";
-import { GraduationCap, ShieldCheck, Mail, Lock, LogIn, ArrowRight, Sparkles } from "lucide-react";
+import { Lock, Mail, GraduationCap, ShieldCheck, ArrowRight, Sparkles, UserCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"STUDENT" | "ADMIN">("STUDENT");
+  const [roleTab, setRoleTab] = useState<"STUDENT" | "ADMIN">("STUDENT");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+    setLoading(true);
+    setErrorMsg("");
 
     const res = await loginUserAction({
       email,
       password,
-      targetRole: role,
+      targetRole: roleTab,
     });
 
-    if (res.success && res.user) {
-      if (res.user.role === "ADMIN") {
+    if (res.success) {
+      if (res.user?.role === "ADMIN" || roleTab === "ADMIN") {
         router.push("/admin/exams");
       } else {
         router.push("/exams");
       }
+      router.refresh();
     } else {
-      setError(res.error || "Login failed. Please check your credentials.");
-      setIsSubmitting(false);
+      setErrorMsg(res.error || "Login failed");
+      setLoading(false);
     }
   };
 
-  const handleSelectAdminRole = () => {
-    setRole("ADMIN");
-    setError(null);
-    setEmail("");
-    setPassword("");
-  };
-
-  const handleSelectStudentRole = () => {
-    setRole("STUDENT");
-    setError(null);
-    setEmail("");
-    setPassword("");
-  };
-
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "3rem 1rem" }}>
-      <div style={{ width: "100%", maxWidth: "490px" }}>
-        <div className="glass-panel" style={{ background: "white", padding: 0, borderRadius: "1.5rem", overflow: "hidden" }}>
-          
-          {/* Header Banner */}
-          <div className="hero-gradient" style={{ padding: "2.5rem 2rem", color: "white", textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(129, 140, 248, 0.18)", color: "#a5b4fc", padding: "0.35rem 0.85rem", borderRadius: "9999px", fontSize: "0.8rem", fontWeight: 700, marginBottom: "0.75rem" }}>
-              <Sparkles size={14} /> Secure Access Portal
-            </div>
-            <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", letterSpacing: "-0.02em" }}>
-              Welcome Back
-            </h1>
-            <p style={{ color: "#cbd5e1", fontSize: "0.95rem", marginBottom: "1.75rem" }}>
-              Sign in to participate in exams or manage assessment papers
-            </p>
+    <div style={{ minHeight: "90vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "3rem 1rem" }}>
+      <div className="glass-panel" style={{ width: "100%", maxWidth: "480px", padding: "2.5rem", borderRadius: "1.5rem" }}>
+        
+        {/* Logo & Header */}
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <div style={{
+            background: "linear-gradient(135deg, #4f46e5 0%, #312e81 100%)",
+            width: "56px",
+            height: "56px",
+            borderRadius: "1rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            margin: "0 auto 1rem auto",
+            boxShadow: "0 10px 25px rgba(79, 70, 229, 0.4)"
+          }}>
+            <GraduationCap size={30} />
+          </div>
+          <h1 style={{ fontSize: "1.85rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.35rem", letterSpacing: "-0.02em" }}>
+            Welcome Back
+          </h1>
+          <p style={{ color: "#64748b", fontSize: "0.95rem" }}>
+            Sign in to participate in exams or manage assessment papers
+          </p>
+        </div>
 
-            {/* Role Tabs */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "rgba(255, 255, 255, 0.08)", padding: "0.3rem", borderRadius: "0.85rem", border: "1px solid rgba(255, 255, 255, 0.12)" }}>
-              <button
-                type="button"
-                onClick={handleSelectStudentRole}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.45rem",
-                  padding: "0.7rem",
-                  borderRadius: "0.65rem",
-                  border: "none",
-                  fontWeight: 800,
-                  fontSize: "0.875rem",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  background: role === "STUDENT" ? "#4f46e5" : "transparent",
-                  color: role === "STUDENT" ? "white" : "#cbd5e1",
-                  boxShadow: role === "STUDENT" ? "0 4px 14px rgba(79, 70, 229, 0.4)" : "none"
-                }}
-              >
-                <GraduationCap size={18} /> Student Login
-              </button>
+        {/* Role Switcher Tabs */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "0.5rem",
+          background: "#f1f5f9",
+          padding: "0.35rem",
+          borderRadius: "0.95rem",
+          marginBottom: "2rem"
+        }}>
+          <button
+            type="button"
+            onClick={() => { setRoleTab("STUDENT"); setErrorMsg(""); }}
+            style={{
+              padding: "0.65rem",
+              borderRadius: "0.75rem",
+              border: "none",
+              background: roleTab === "STUDENT" ? "#ffffff" : "transparent",
+              color: roleTab === "STUDENT" ? "#4f46e5" : "#64748b",
+              fontWeight: 800,
+              fontSize: "0.875rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.45rem",
+              boxShadow: roleTab === "STUDENT" ? "0 4px 12px rgba(0, 0, 0, 0.05)" : "none",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <UserCheck size={16} /> Student Login
+          </button>
 
-              <button
-                type="button"
-                onClick={handleSelectAdminRole}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.45rem",
-                  padding: "0.7rem",
-                  borderRadius: "0.65rem",
-                  border: "none",
-                  fontWeight: 800,
-                  fontSize: "0.875rem",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  background: role === "ADMIN" ? "#4f46e5" : "transparent",
-                  color: role === "ADMIN" ? "white" : "#cbd5e1",
-                  boxShadow: role === "ADMIN" ? "0 4px 14px rgba(79, 70, 229, 0.4)" : "none"
-                }}
-              >
-                <ShieldCheck size={18} /> Admin Login
-              </button>
+          <button
+            type="button"
+            onClick={() => { setRoleTab("ADMIN"); setErrorMsg(""); }}
+            style={{
+              padding: "0.65rem",
+              borderRadius: "0.75rem",
+              border: "none",
+              background: roleTab === "ADMIN" ? "#4f46e5" : "transparent",
+              color: roleTab === "ADMIN" ? "#ffffff" : "#64748b",
+              fontWeight: 800,
+              fontSize: "0.875rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.45rem",
+              boxShadow: roleTab === "ADMIN" ? "0 4px 14px rgba(79, 70, 229, 0.35)" : "none",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <ShieldCheck size={16} /> Admin Login
+          </button>
+        </div>
+
+        {errorMsg && (
+          <div style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#dc2626",
+            padding: "0.85rem 1rem",
+            borderRadius: "0.85rem",
+            fontSize: "0.9rem",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem"
+          }}>
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div>
+            <label className="input-label">
+              {roleTab === "ADMIN" ? "Admin Username / Email *" : "Student Email Address *"}
+            </label>
+            <div style={{ position: "relative" }}>
+              <Mail size={18} color="#94a3b8" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
+              <input
+                type={roleTab === "ADMIN" ? "text" : "email"}
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={roleTab === "ADMIN" ? "habib@gmail.com" : "student@gmail.com"}
+                className="input-field"
+                style={{ paddingLeft: "2.75rem" }}
+              />
             </div>
           </div>
 
-          <div style={{ padding: "2.25rem" }}>
-            {error && (
-              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "0.9rem 1rem", borderRadius: "0.85rem", fontSize: "0.875rem", marginBottom: "1.5rem", fontWeight: 600 }}>
-                {error}
-              </div>
+          <div>
+            <label className="input-label">Password *</label>
+            <div style={{ position: "relative" }}>
+              <Lock size={18} color="#94a3b8" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="input-field"
+                style={{ paddingLeft: "2.75rem" }}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+            style={{ width: "100%", padding: "0.85rem", fontSize: "1rem", marginTop: "0.5rem" }}
+          >
+            {loading ? (
+              <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span className="animate-spin">⏳</span> Authenticating...
+              </span>
+            ) : (
+              <>
+                Sign In as {roleTab === "ADMIN" ? "Admin" : "Student"} <ArrowRight size={18} />
+              </>
             )}
+          </button>
+        </form>
 
-            <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: "1.25rem" }}>
-                <label className="input-label">{role === "ADMIN" ? "Admin Username / Email *" : "Student Email Address *"}</label>
-                <div style={{ position: "relative" }}>
-                  <Mail size={18} color="#94a3b8" style={{ position: "absolute", left: "1.1rem", top: "50%", transform: "translateY(-50%)" }} />
-                  <input
-                    type="text"
-                    required
-                    placeholder={role === "ADMIN" ? "e.g. habib" : "e.g. student@school.edu"}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field"
-                    style={{ paddingLeft: "2.85rem" }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: "2rem" }}>
-                <label className="input-label">Password *</label>
-                <div style={{ position: "relative" }}>
-                  <Lock size={18} color="#94a3b8" style={{ position: "absolute", left: "1.1rem", top: "50%", transform: "translateY(-50%)" }} />
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-field"
-                    style={{ paddingLeft: "2.85rem" }}
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn btn-primary"
-                style={{ width: "100%", padding: "0.95rem", fontSize: "1.05rem", borderRadius: "0.85rem" }}
-              >
-                {isSubmitting ? "Signing In..." : `Sign In as ${role === "ADMIN" ? "Admin" : "Student"}`} <LogIn size={18} />
-              </button>
-            </form>
-
-            <div style={{ borderTop: "1px solid #f1f5f9", marginTop: "1.75rem", paddingTop: "1.25rem", textAlign: "center", fontSize: "0.9rem", color: "#64748b" }}>
-              Need a student account?{" "}
-              <Link href="/register" style={{ color: "#4f46e5", fontWeight: 700 }}>
-                Register Student Account <ArrowRight size={14} style={{ display: "inline" }} />
-              </Link>
-            </div>
-          </div>
+        <div style={{ marginTop: "1.75rem", textAlign: "center", fontSize: "0.9rem", color: "#64748b" }}>
+          Need a student account?{" "}
+          <Link href="/register" style={{ color: "#4f46e5", fontWeight: 700, textDecoration: "underline" }}>
+            Register Student Account
+          </Link>
         </div>
       </div>
     </div>

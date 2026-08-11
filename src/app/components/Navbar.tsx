@@ -12,55 +12,55 @@ export default async function Navbar() {
 
   return (
     <nav style={{
-      background: "rgba(255, 255, 255, 0.92)",
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)",
+      background: "rgba(255, 255, 255, 0.9)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
       borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
-      padding: "0.75rem 0",
+      padding: "0.85rem 0",
       position: "sticky",
       top: 0,
       zIndex: 50,
-      boxShadow: "0 4px 20px -5px rgba(0, 0, 0, 0.04)"
+      boxShadow: "0 4px 20px -5px rgba(15, 23, 42, 0.05)"
     }}>
-      <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
+      <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.85rem" }}>
         
         {/* Brand Logo */}
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}>
           <div style={{
             background: "linear-gradient(135deg, #4f46e5 0%, #312e81 100%)",
-            padding: "0.45rem",
-            borderRadius: "0.75rem",
+            padding: "0.55rem",
+            borderRadius: "0.85rem",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "white",
-            boxShadow: "0 6px 14px -3px rgba(79, 70, 229, 0.4)"
+            boxShadow: "0 8px 18px -4px rgba(79, 70, 229, 0.45)"
           }}>
-            <GraduationCap size={22} />
+            <GraduationCap size={24} />
           </div>
           <div>
-            <span style={{ fontSize: "1.15rem", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: "0.3rem", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
-              ExamPortal <Sparkles size={13} color="#6366f1" />
+            <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: "0.35rem", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+              ExamPortal <Sparkles size={14} color="#6366f1" />
             </span>
-            <span style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 600 }}>
-              Smart Student Assessment
+            <span style={{ fontSize: "0.725rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.02em" }}>
+              Smart Student Assessment System
             </span>
           </div>
         </Link>
 
         {/* Links & Auth State */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-          <Link href="/exams" className="btn btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.8rem", borderRadius: "0.65rem" }}>
-            <BookOpen size={15} /> Exams
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+          <Link href="/exams" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+            <BookOpen size={16} /> Exams Portal
           </Link>
 
-          <Link href="/exams/history" className="btn btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.8rem", borderRadius: "0.65rem" }}>
-            <History size={15} color="#4f46e5" /> History & Results
+          <Link href="/exams/history" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+            <History size={16} color="#4f46e5" /> History & Results
           </Link>
 
           {isAdmin && (
-            <Link href="/admin/exams" className="btn btn-dark" style={{ padding: "0.45rem 0.85rem", fontSize: "0.8rem", borderRadius: "0.65rem" }}>
-              <ShieldCheck size={15} color="#818cf8" /> Admin
+            <Link href="/admin/exams" className="btn btn-dark" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+              <ShieldCheck size={16} color="#818cf8" /> Admin Dashboard
             </Link>
           )}
 
@@ -68,26 +68,26 @@ export default async function Navbar() {
             <div style={{
               display: "flex",
               alignItems: "center",
-              gap: "0.6rem",
+              gap: "0.75rem",
               background: "#ffffff",
-              padding: "0.25rem 0.65rem",
-              borderRadius: "0.75rem",
+              padding: "0.35rem 0.85rem",
+              borderRadius: "0.85rem",
               border: "1px solid #e2e8f0",
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.04)"
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)"
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <div style={{
                   background: isAdmin ? "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)" : "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
                   color: isAdmin ? "#3730a3" : "#92400e",
-                  padding: "0.3rem",
+                  padding: "0.35rem",
                   borderRadius: "50%",
                   display: "flex"
                 }}>
-                  <UserIcon size={14} />
+                  <UserIcon size={15} />
                 </div>
-                <div style={{ fontSize: "0.8rem" }}>
+                <div style={{ fontSize: "0.825rem" }}>
                   <strong style={{ display: "block", color: "#0f172a", lineHeight: 1.1, fontWeight: 700 }}>{userName || "User"}</strong>
-                  <span style={{ fontSize: "0.65rem", color: isAdmin ? "#4f46e5" : "#d97706", fontWeight: 800, textTransform: "uppercase" }}>{role}</span>
+                  <span style={{ fontSize: "0.675rem", color: isAdmin ? "#4f46e5" : "#d97706", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>{role}</span>
                 </div>
               </div>
 
@@ -98,27 +98,28 @@ export default async function Navbar() {
                     background: "#fef2f2",
                     color: "#dc2626",
                     border: "1px solid #fecaca",
-                    padding: "0.35rem 0.6rem",
-                    borderRadius: "0.5rem",
-                    fontSize: "0.75rem",
+                    padding: "0.38rem 0.7rem",
+                    borderRadius: "0.6rem",
+                    fontSize: "0.8rem",
                     fontWeight: 700,
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "0.25rem"
+                    gap: "0.3rem",
+                    transition: "all 0.2s ease"
                   }}
                 >
-                  <LogOut size={13} /> Exit
+                  <LogOut size={14} /> Exit
                 </button>
               </form>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Link href="/login" className="btn btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.8rem", borderRadius: "0.65rem" }}>
-                <LogIn size={15} /> Sign In
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Link href="/login" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+                <LogIn size={16} /> Sign In
               </Link>
-              <Link href="/register" className="btn btn-primary" style={{ padding: "0.45rem 0.85rem", fontSize: "0.8rem", borderRadius: "0.65rem" }}>
-                <UserPlus size={15} /> Sign Up
+              <Link href="/register" className="btn btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+                <UserPlus size={16} /> Sign Up
               </Link>
             </div>
           )}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getStudentExamsAction } from "@/app/actions/examActions";
 import { getAuthSessionAction } from "@/app/actions/authActions";
-import { Clock, Calendar, FileText, ArrowRight, ShieldCheck, Sparkles, CheckCircle2, Award, Eye, History } from "lucide-react";
+import { Clock, Calendar, FileText, ArrowRight, ShieldCheck, Sparkles, CheckCircle2, Award, Eye, History, Layers, CheckSquare } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -13,63 +13,64 @@ export default async function StudentExamsPage() {
   const exams = result.exams || [];
   const now = new Date();
 
+  const mcqCount = exams.filter(e => e.category === "MCQ").length;
+  const cqCount = exams.filter(e => e.category === "CQ").length;
+
   return (
     <div style={{ minHeight: "100vh", padding: "3rem 0" }}>
       <div className="container">
         {/* Header Hero Banner */}
         <div className="hero-gradient" style={{
-          borderRadius: "1.5rem",
-          padding: "3rem 2.5rem",
+          padding: "3.5rem 2.5rem",
           color: "white",
           marginBottom: "3rem",
-          boxShadow: "0 20px 40px -10px rgba(15, 23, 42, 0.3)",
           display: "flex",
           flexDirection: "column",
-          gap: "1.25rem",
+          gap: "1.5rem",
         }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem", position: "relative", zIndex: 2 }}>
-            <div style={{ maxWidth: "680px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1.75rem", position: "relative", zIndex: 2 }}>
+            <div style={{ maxWidth: "700px" }}>
               <div style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.5rem",
-                background: "rgba(129, 140, 248, 0.18)",
+                background: "rgba(129, 140, 248, 0.2)",
                 color: "#a5b4fc",
-                border: "1px solid rgba(129, 140, 248, 0.3)",
-                padding: "0.4rem 1rem",
+                border: "1px solid rgba(129, 140, 248, 0.35)",
+                padding: "0.45rem 1.1rem",
                 borderRadius: "9999px",
                 fontSize: "0.85rem",
                 fontWeight: 700,
-                marginBottom: "1rem",
-                backdropFilter: "blur(8px)"
+                marginBottom: "1.25rem",
+                backdropFilter: "blur(12px)"
               }}>
-                <Sparkles size={16} color="#818cf8" /> Official Student Portal (1 Attempt Rule Enforced)
+                <Sparkles size={16} color="#818cf8" /> Smart Student Examination Portal
               </div>
 
-              <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "white", marginBottom: "0.75rem", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-                Online Examination Room
+              <h1 style={{ fontSize: "2.75rem", fontWeight: 800, color: "white", marginBottom: "0.85rem", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
+                Online Assessment Center
               </h1>
 
-              <p style={{ color: "#cbd5e1", fontSize: "1.05rem", lineHeight: 1.6 }}>
-                Participate in scheduled MCQ & CQ assessments. Upload written answer paper photos, track strict countdown timers, and view your score & teacher result feedback.
+              <p style={{ color: "#cbd5e1", fontSize: "1.08rem", lineHeight: 1.6 }}>
+                Participate in scheduled MCQ auto-graded & CQ creative written exams. Upload answer paper photos, track countdown timers, and view your score & teacher feedback.
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap" }}>
               <Link
                 href="/exams/history"
                 className="btn"
                 style={{
-                  background: "rgba(255, 255, 255, 0.15)",
+                  background: "rgba(255, 255, 255, 0.16)",
                   color: "white",
-                  backdropFilter: "blur(8px)",
-                  padding: "0.85rem 1.4rem",
+                  backdropFilter: "blur(12px)",
+                  padding: "0.85rem 1.5rem",
                   borderRadius: "0.85rem",
                   fontWeight: 700,
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "0.6rem",
-                  border: "1px solid rgba(255, 255, 255, 0.2)"
+                  gap: "0.65rem",
+                  border: "1px solid rgba(255, 255, 255, 0.25)"
                 }}
               >
                 <History size={18} color="#a5b4fc" /> My Past Results & Questions
@@ -80,12 +81,12 @@ export default async function StudentExamsPage() {
                   href="/admin/exams"
                   className="btn btn-dark"
                   style={{
-                    padding: "0.85rem 1.4rem",
+                    padding: "0.85rem 1.5rem",
                     borderRadius: "0.85rem",
                     fontWeight: 700,
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "0.6rem",
+                    gap: "0.65rem",
                     boxShadow: "0 10px 25px rgba(0,0,0,0.3)"
                   }}
                 >
@@ -94,28 +95,61 @@ export default async function StudentExamsPage() {
               )}
             </div>
           </div>
+
+          {/* Quick Metrics Bar */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", background: "rgba(255, 255, 255, 0.07)", padding: "1.25rem 1.75rem", borderRadius: "1.1rem", border: "1px solid rgba(255, 255, 255, 0.12)", position: "relative", zIndex: 2 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{ background: "rgba(99, 102, 241, 0.3)", padding: "0.6rem", borderRadius: "0.75rem", color: "#a5b4fc" }}>
+                <Layers size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>TOTAL EXAMS</span>
+                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "white" }}>{exams.length} Papers</div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{ background: "rgba(16, 185, 129, 0.3)", padding: "0.6rem", borderRadius: "0.75rem", color: "#34d399" }}>
+                <CheckSquare size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>⚡ MCQ EXAMS</span>
+                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "white" }}>{mcqCount} Available</div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{ background: "rgba(245, 158, 11, 0.3)", padding: "0.6rem", borderRadius: "0.75rem", color: "#fbbf24" }}>
+                <FileText size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>📄 CQ WRITTEN</span>
+                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "white" }}>{cqCount} Available</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Section Heading */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
           <div>
-            <h2 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
-              Available Assessment Sessions
+            <h2 style={{ fontSize: "1.75rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+              Available Examination Sessions
             </h2>
-            <p style={{ color: "#64748b", fontSize: "0.9rem" }}>Note: Each student gets exactly 1 attempt per exam paper.</p>
+            <p style={{ color: "#64748b", fontSize: "0.95rem" }}>Note: Strictly 1 attempt is allowed per student for each exam paper.</p>
           </div>
         </div>
 
         {exams.length === 0 ? (
-          <div className="glass-panel" style={{ padding: "4rem 2rem", textAlign: "center", border: "2px dashed #cbd5e1", borderRadius: "1.5rem" }}>
-            <div style={{ background: "#eff6ff", width: "70px", height: "70px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.25rem auto" }}>
-              <FileText size={36} color="#4f46e5" />
+          <div className="glass-panel" style={{ padding: "4.5rem 2rem", textAlign: "center", border: "2px dashed #cbd5e1", borderRadius: "1.5rem" }}>
+            <div style={{ background: "#eff6ff", width: "76px", height: "76px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.25rem auto" }}>
+              <FileText size={40} color="#4f46e5" />
             </div>
-            <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>
+            <h3 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>
               No Active Exams Currently Scheduled
             </h3>
-            <p style={{ color: "#64748b", marginBottom: "1.75rem", maxWidth: "450px", margin: "0 auto 1.75rem auto" }}>
-              There are no published exam papers at the moment. Please check back later or contact your instructor.
+            <p style={{ color: "#64748b", marginBottom: "1.75rem", maxWidth: "480px", margin: "0 auto 1.75rem auto" }}>
+              There are no published assessment papers at the moment. Please check back later or contact your instructor.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
               <Link href="/exams/history" className="btn btn-outline" style={{ borderRadius: "0.75rem" }}>
@@ -143,13 +177,13 @@ export default async function StudentExamsPage() {
                   key={exam.id}
                   className="glass-panel"
                   style={{
-                    padding: "1.75rem",
+                    padding: "1.85rem",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
                     position: "relative",
                     border: hasAttempted ? "2px solid #22c55e" : isActive ? "2px solid #6366f1" : "1px solid #e2e8f0",
-                    background: hasAttempted ? "#f0fdf4" : isActive ? "linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%)" : "white"
+                    background: hasAttempted ? "linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)" : isActive ? "linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%)" : "white"
                   }}
                 >
                   <div>
@@ -179,12 +213,13 @@ export default async function StudentExamsPage() {
                           ? "⏳ Upcoming"
                           : "🔴 Concluded"}
                       </span>
+
                       <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#4f46e5", background: "#f5f3ff", padding: "0.25rem 0.65rem", borderRadius: "0.5rem" }}>
                         {exam.totalMarks} Marks
                       </span>
                     </div>
 
-                    <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.6rem", letterSpacing: "-0.01em" }}>
+                    <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.6rem", letterSpacing: "-0.01em" }}>
                       {exam.title}
                     </h3>
 
@@ -195,7 +230,7 @@ export default async function StudentExamsPage() {
                     )}
 
                     {/* Metadata Card */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", background: "#f8fafc", padding: "1.1rem", borderRadius: "0.85rem", marginBottom: "1.5rem", fontSize: "0.875rem", border: "1px solid #f1f5f9" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", background: "#f8fafc", padding: "1.1rem", borderRadius: "0.95rem", marginBottom: "1.5rem", fontSize: "0.875rem", border: "1px solid #f1f5f9" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "#334155" }}>
                         <Calendar size={16} color="#4f46e5" />
                         <span><strong>Date:</strong> {start.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</span>
