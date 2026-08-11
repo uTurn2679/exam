@@ -13,7 +13,7 @@ if (typeof window === "undefined") {
     if (connectionString && (connectionString.startsWith("postgres") || connectionString.startsWith("postgresql"))) {
       const pool = new pg.Pool({
         connectionString,
-        ssl: { rejectUnauthorized: false },
+        ssl: { rejectUnauthorized: false }
       });
       const adapter = new PrismaPg(pool);
       globalForPrisma.prisma = new PrismaClient({ adapter });
