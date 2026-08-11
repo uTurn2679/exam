@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -62,7 +62,7 @@ model ExamSubmission {
   studentPhone   String?
   answerFileUrl  String?         // Legacy single file URL
   answerFileType String?         // "pdf" or "image"
-  answerFiles    String?         // JSON string array of multiple uploaded answer files: ["/uploads/img1.jpg", "/uploads/img2.jpg"]
+  answerFiles    String?         // JSON string array of multiple uploaded answer files
   startTime      DateTime        @default(now())
   submittedAt    DateTime?
   totalScore     Float?

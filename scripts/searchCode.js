@@ -12,12 +12,11 @@ function searchDir(dir) {
       }
     } else if (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js')) {
       const content = fs.readFileSync(fullPath, 'utf8');
-      if (content.includes('user.update') || content.includes('prisma.user')) {
-        console.log(`FOUND in ${fullPath}:`);
+      if (content.includes('.update(') || content.includes('prisma.')) {
         const lines = content.split('\n');
         lines.forEach((line, i) => {
-          if (line.includes('user.update') || line.includes('prisma.user')) {
-            console.log(`  L${i + 1}: ${line}`);
+          if (line.includes('.update(')) {
+            console.log(`${fullPath}:${i + 1} => ${line.trim()}`);
           }
         });
       }

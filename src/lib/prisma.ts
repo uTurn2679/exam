@@ -1,8 +1,7 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import path from "path";
-import fs from "fs";
-import os from "os";
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -10,31 +9,17 @@ let prisma: PrismaClient;
 
 if (typeof window === "undefined") {
   if (!globalForPrisma.prisma) {
-    let targetDbPath = path.resolve(process.cwd(), "dev.db");
-
-    // If running in Vercel / Serverless environment (/tmp directory writable)
-    if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-      try {
-        const tmpDir = os.tmpdir();
-        const tmpDbPath = path.join(tmpDir, "dev.db");
-
-        if (!fs.existsSync(tmpDbPath)) {
-          const sourceDbPath = path.resolve(process.cwd(), "dev.db");
-          if (fs.existsSync(sourceDbPath)) {
-            fs.copyFileSync(sourceDbPath, tmpDbPath);
-          }
-        }
-
-        if (fs.existsSync(tmpDbPath)) {
-          targetDbPath = tmpDbPath;
-        }
-      } catch (e) {
-        console.error("Error configuring writable temp database:", e);
-      }
+    const connectionString = process.env.DATABASE_URL;
+    if (connectionString && (connectionString.startsWith("postgres") || connectionString.startsWith("postgresql"))) {
+      const pool = new pg.Pool({
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+      });
+      const adapter = new PrismaPg(pool);
+      globalForPrisma.prisma = new PrismaClient({ adapter });
+    } else {
+      globalForPrisma.prisma = new PrismaClient();
     }
-
-    const adapter = new PrismaBetterSqlite3({ url: targetDbPath });
-    globalForPrisma.prisma = new PrismaClient({ adapter });
   }
   prisma = globalForPrisma.prisma;
 }
