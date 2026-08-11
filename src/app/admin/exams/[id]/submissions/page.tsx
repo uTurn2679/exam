@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { getExamWithQuestionsAction, getExamSubmissionsAction, getSubmissionDetailsAction, gradeSubmissionAction } from "@/app/actions/examActions";
 import MediaViewerModal from "@/app/components/MediaViewerModal";
-import { ArrowLeft, Eye, Save, FileCheck, FileText, Download, Maximize2 } from "lucide-react";
+import { ArrowLeft, Eye, Save, FileCheck, FileText, Download, Maximize2, Image as ImageIcon, AlertCircle } from "lucide-react";
 
 export default function AdminExamSubmissionsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: examId } = use(params);
@@ -157,11 +157,15 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
                       <td style={{ padding: "1rem 1.5rem" }}>
                         <div style={{ fontWeight: 800, color: "#0f172a" }}>{sub.studentName}</div>
                         {sub.studentEmail && <div style={{ fontSize: "0.8rem", color: "#64748b" }}>{sub.studentEmail}</div>}
-                        {fileList.length > 0 && (
+                        {fileList.length > 0 ? (
                           <span style={{ fontSize: "0.75rem", color: "#16a34a", fontWeight: 700, display: "block", marginTop: "0.2rem" }}>
                             🖼️ Attached Pictures ({fileList.length} File(s))
                           </span>
-                        )}
+                        ) : exam.category === "CQ" ? (
+                          <span style={{ fontSize: "0.75rem", color: "#dc2626", fontWeight: 600, display: "block", marginTop: "0.2rem" }}>
+                            ⚠️ No photos attached
+                          </span>
+                        ) : null}
                       </td>
                       <td style={{ padding: "1rem", color: "#475569" }}>
                         {sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : "In Progress"}
@@ -227,7 +231,7 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
                 </div>
 
                 {/* Multiple Student Uploaded Answer Pictures / Files Viewer with Fullscreen & Download */}
-                {fileList.length > 0 && (
+                {fileList.length > 0 ? (
                   <div style={{ background: "#f8fafc", borderRadius: "1rem", padding: "1.5rem", border: "1px solid #cbd5e1", marginBottom: "2rem" }}>
                     <h4 style={{ fontSize: "1.1rem", fontWeight: 800, color: "#0f172a", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       🖼️ Student Answer Paper Pictures ({fileList.length} Attached File(s))
@@ -235,7 +239,7 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.25rem", marginBottom: "1.25rem" }}>
                       {fileList.map((fileUrl, index) => {
-                        const isPdf = fileUrl.toLowerCase().endsWith(".pdf");
+                        const isPdf = fileUrl.toLowerCase().includes(".pdf") || fileUrl.startsWith("data:application/pdf");
                         return (
                           <div key={index} style={{ background: "white", borderRadius: "0.85rem", padding: "0.75rem", border: "1px solid #e2e8f0", textAlign: "center" }}>
                             {isPdf ? (
@@ -294,6 +298,16 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
                       />
                     </div>
                   </div>
+                ) : (
+                  exam.category === "CQ" && (
+                    <div style={{ background: "#fffbeb", padding: "1.25rem", borderRadius: "1rem", border: "1px solid #fcd34d", marginBottom: "2rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <AlertCircle size={24} color="#b45309" />
+                      <div>
+                        <h4 style={{ fontWeight: 800, color: "#92400e", fontSize: "0.95rem" }}>No Answer Photos Attached</h4>
+                        <p style={{ fontSize: "0.85rem", color: "#b45309" }}>This student submitted an answer paper without attaching written script photos.</p>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {/* Answers Review List */}
