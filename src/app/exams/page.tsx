@@ -56,25 +56,6 @@ export default async function StudentExamsPage() {
             </div>
 
             <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap" }}>
-              <Link
-                href="/exams/history"
-                className="btn"
-                style={{
-                  background: "rgba(255, 255, 255, 0.16)",
-                  color: "white",
-                  backdropFilter: "blur(12px)",
-                  padding: "0.85rem 1.5rem",
-                  borderRadius: "0.85rem",
-                  fontWeight: 700,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.65rem",
-                  border: "1px solid rgba(255, 255, 255, 0.25)"
-                }}
-              >
-                <History size={18} color="#a5b4fc" /> My Past Results & Questions
-              </Link>
-
               {isAdmin && (
                 <Link
                   href="/admin/exams"
