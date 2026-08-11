@@ -52,7 +52,7 @@ export async function registerUserAction(input: RegisterInput) {
 }
 
 export type LoginInput = {
-  email: string; // Can be email "22cseahsanhabib@gmail.com" or username "habib"
+  email: string; // Can be "habib@gmail.com" or "habib"
   password: string;
   targetRole?: "STUDENT" | "ADMIN";
 };
@@ -62,14 +62,14 @@ export async function loginUserAction(input: LoginInput) {
     const inputClean = input.email.trim().toLowerCase();
     const isAdminAttempt =
       input.targetRole === "ADMIN" ||
-      inputClean === "22cseahsanhabib@gmail.com" ||
+      inputClean === "habib@gmail.com" ||
       inputClean === "habib" ||
-      inputClean === "habib@gmail.com";
+      inputClean === "22cseahsanhabib@gmail.com";
 
     // Check fixed Admin login credentials
     if (isAdminAttempt) {
-      const validEmails = ["22cseahsanhabib@gmail.com", "habib", "habib@gmail.com"];
-      if (validEmails.includes(inputClean) && input.password === "267993") {
+      const validAdminIdentifiers = ["habib@gmail.com", "habib", "22cseahsanhabib@gmail.com"];
+      if (validAdminIdentifiers.includes(inputClean) && input.password === "267993") {
         let adminUser = await prisma.user.findFirst({
           where: { role: "ADMIN" },
         });
@@ -78,17 +78,17 @@ export async function loginUserAction(input: LoginInput) {
           adminUser = await prisma.user.create({
             data: {
               name: "habib",
-              email: "22cseahsanhabib@gmail.com",
+              email: "habib@gmail.com",
               password: "267993",
               role: "ADMIN",
             },
           });
         } else {
-          // Keep admin email & password updated to 22cseahsanhabib@gmail.com / 267993
+          // Keep admin email & password updated to habib@gmail.com / 267993
           adminUser = await prisma.user.update({
             where: { id: adminUser.id },
             data: {
-              email: "22cseahsanhabib@gmail.com",
+              email: "habib@gmail.com",
               password: "267993",
               name: "habib",
             },
@@ -98,13 +98,13 @@ export async function loginUserAction(input: LoginInput) {
         const cookieStore = await cookies();
         cookieStore.set("auth_session", adminUser.id, { httpOnly: true, path: "/" });
         cookieStore.set("auth_user_name", "habib", { httpOnly: false, path: "/" });
-        cookieStore.set("auth_user_email", "22cseahsanhabib@gmail.com", { httpOnly: false, path: "/" });
+        cookieStore.set("auth_user_email", "habib@gmail.com", { httpOnly: false, path: "/" });
         cookieStore.set("auth_role", "ADMIN", { httpOnly: false, path: "/" });
 
         revalidatePath("/");
-        return { success: true, user: { id: adminUser.id, name: "habib", email: "22cseahsanhabib@gmail.com", role: "ADMIN" } };
+        return { success: true, user: { id: adminUser.id, name: "habib", email: "habib@gmail.com", role: "ADMIN" } };
       } else {
-        return { success: false, error: "Invalid Admin email/username or password." };
+        return { success: false, error: "Invalid Admin email or password." };
       }
     }
 

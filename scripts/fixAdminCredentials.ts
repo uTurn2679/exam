@@ -1,7 +1,7 @@
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
-  console.log("Setting fixed Admin credentials: Email = 22cseahsanhabib@gmail.com, Password = 267993");
+  console.log("Setting fixed Admin credentials: Email = habib@gmail.com, Password = 267993");
 
   await prisma.user.deleteMany({
     where: { role: "ADMIN" },
@@ -10,7 +10,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       name: "habib",
-      email: "22cseahsanhabib@gmail.com",
+      email: "habib@gmail.com",
       password: "267993",
       role: "ADMIN",
     },
