@@ -84,8 +84,14 @@ export default function AdminExamsPage() {
       return;
     }
 
+    // Convert datetime-local picker value to explicit client ISO string (prevents timezone offset shift)
+    const startIso = new Date(formData.startTime).toISOString();
+    const endIso = new Date(formData.endTime).toISOString();
+
     const res = await createExamAction({
       ...formData,
+      startTime: startIso,
+      endTime: endIso,
       questionFileUrl: questionFileUrl || undefined,
       questionFileType: questionFileType || undefined,
       durationMinutes: Number(formData.durationMinutes),
@@ -271,93 +277,98 @@ export default function AdminExamsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {exams.map((exam) => (
-              <div
-                key={exam.id}
-                className="glass-panel"
-                style={{
-                  padding: "1.85rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  background: "white",
-                  borderRadius: "1.25rem"
-                }}
-              >
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                      <span
-                        onClick={() => handleTogglePublish(exam.id, exam.isPublished)}
-                        style={{
-                          cursor: "pointer",
-                          fontSize: "0.75rem",
-                          fontWeight: 800,
-                          padding: "0.35rem 0.75rem",
-                          borderRadius: "9999px",
-                          background: exam.isPublished ? "#dcfce7" : "#f1f5f9",
-                          color: exam.isPublished ? "#15803d" : "#64748b",
-                        }}
-                      >
-                        {exam.isPublished ? "● Published" : "○ Draft"}
-                      </span>
+            {exams.map((exam) => {
+              const startDate = new Date(exam.startTime);
+              const endDate = new Date(exam.endTime);
 
-                      <span style={{ fontSize: "0.75rem", fontWeight: 800, background: "#eff6ff", color: "#1d4ed8", padding: "0.35rem 0.65rem", borderRadius: "9999px", border: "1px solid #bfdbfe" }}>
-                        📚 {exam.subject || "General"}
-                      </span>
+              return (
+                <div
+                  key={exam.id}
+                  className="glass-panel"
+                  style={{
+                    padding: "1.85rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    background: "white",
+                    borderRadius: "1.25rem"
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                        <span
+                          onClick={() => handleTogglePublish(exam.id, exam.isPublished)}
+                          style={{
+                            cursor: "pointer",
+                            fontSize: "0.75rem",
+                            fontWeight: 800,
+                            padding: "0.35rem 0.75rem",
+                            borderRadius: "9999px",
+                            background: exam.isPublished ? "#dcfce7" : "#f1f5f9",
+                            color: exam.isPublished ? "#15803d" : "#64748b",
+                          }}
+                        >
+                          {exam.isPublished ? "● Published" : "○ Draft"}
+                        </span>
 
-                      <span style={{ fontSize: "0.75rem", fontWeight: 800, background: exam.category === "CQ" ? "#fef3c7" : "#e0e7ff", color: exam.category === "CQ" ? "#b45309" : "#3730a3", padding: "0.35rem 0.65rem", borderRadius: "9999px" }}>
-                        {exam.category === "CQ" ? "📄 CQ Written" : "⚡ MCQ"}
+                        <span style={{ fontSize: "0.75rem", fontWeight: 800, background: "#eff6ff", color: "#1d4ed8", padding: "0.35rem 0.65rem", borderRadius: "9999px", border: "1px solid #bfdbfe" }}>
+                          📚 {exam.subject || "General"}
+                        </span>
+
+                        <span style={{ fontSize: "0.75rem", fontWeight: 800, background: exam.category === "CQ" ? "#fef3c7" : "#e0e7ff", color: exam.category === "CQ" ? "#b45309" : "#3730a3", padding: "0.35rem 0.65rem", borderRadius: "9999px" }}>
+                          {exam.category === "CQ" ? "📄 CQ Written" : "⚡ MCQ"}
+                        </span>
+                      </div>
+
+                      <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#4f46e5", background: "#f5f3ff", padding: "0.25rem 0.65rem", borderRadius: "0.5rem" }}>
+                        {exam.totalMarks} Marks
                       </span>
                     </div>
 
-                    <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#4f46e5", background: "#f5f3ff", padding: "0.25rem 0.65rem", borderRadius: "0.5rem" }}>
-                      {exam.totalMarks} Marks
-                    </span>
+                    <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem", letterSpacing: "-0.01em" }}>
+                      {exam.title}
+                    </h3>
+                    <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: "1.25rem", lineHeight: 1.5 }}>
+                      {exam.description || "No description provided."}
+                    </p>
+
+                    <div style={{ background: "#f8fafc", padding: "1rem", borderRadius: "0.85rem", display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.85rem", color: "#475569", marginBottom: "1.5rem", border: "1px solid #f1f5f9" }}>
+                      <div><strong>Start:</strong> {startDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })}, {startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+                      <div><strong>End:</strong> {endDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })}, {endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+                      <div><strong>Timer:</strong> {exam.durationMinutes} Mins</div>
+                      {exam.questionFileUrl ? (
+                        <div style={{ color: "#2563eb", fontWeight: 700 }}><strong>Question Attachment:</strong> Uploaded File</div>
+                      ) : (
+                        <div><strong>Questions:</strong> {exam._count.questions} item(s)</div>
+                      )}
+                      <div><strong>Submissions:</strong> {exam._count.submissions} paper(s)</div>
+                    </div>
                   </div>
 
-                  <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem", letterSpacing: "-0.01em" }}>
-                    {exam.title}
-                  </h3>
-                  <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: "1.25rem", lineHeight: 1.5 }}>
-                    {exam.description || "No description provided."}
-                  </p>
-
-                  <div style={{ background: "#f8fafc", padding: "1rem", borderRadius: "0.85rem", display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.85rem", color: "#475569", marginBottom: "1.5rem", border: "1px solid #f1f5f9" }}>
-                    <div><strong>Start:</strong> {new Date(exam.startTime).toLocaleString()}</div>
-                    <div><strong>End:</strong> {new Date(exam.endTime).toLocaleString()}</div>
-                    <div><strong>Timer:</strong> {exam.durationMinutes} Mins</div>
-                    {exam.questionFileUrl ? (
-                      <div style={{ color: "#2563eb", fontWeight: 700 }}><strong>Question Attachment:</strong> Uploaded PDF/Photo</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                    {exam.category === "MCQ" ? (
+                      <Link href={`/admin/exams/${exam.id}/edit`} className="btn btn-outline" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem" }}>
+                        <Edit3 size={16} /> Manage Questions ({exam._count.questions})
+                      </Link>
                     ) : (
-                      <div><strong>Questions:</strong> {exam._count.questions} item(s)</div>
+                      <a href={exam.questionFileUrl || "#"} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem" }}>
+                        <FileCheck size={16} /> View Question File
+                      </a>
                     )}
-                    <div><strong>Submissions:</strong> {exam._count.submissions} paper(s)</div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.6rem" }}>
+                      <Link href={`/admin/exams/${exam.id}/submissions`} className="btn" style={{ background: "#f1f5f9", color: "#1e293b", justifyContent: "center", borderRadius: "0.75rem" }}>
+                        <Users size={16} /> Submissions ({exam._count.submissions})
+                      </Link>
+                      <button onClick={() => handleDelete(exam.id, exam.title)} className="btn" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "0.75rem", padding: "0.6rem" }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {exam.category === "MCQ" ? (
-                    <Link href={`/admin/exams/${exam.id}/edit`} className="btn btn-outline" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem" }}>
-                      <Edit3 size={16} /> Manage Questions ({exam._count.questions})
-                    </Link>
-                  ) : (
-                    <a href={exam.questionFileUrl || "#"} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem" }}>
-                      <FileCheck size={16} /> View Question File
-                    </a>
-                  )}
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.6rem" }}>
-                    <Link href={`/admin/exams/${exam.id}/submissions`} className="btn" style={{ background: "#f1f5f9", color: "#1e293b", justifyContent: "center", borderRadius: "0.75rem" }}>
-                      <Users size={16} /> Submissions ({exam._count.submissions})
-                    </Link>
-                    <button onClick={() => handleDelete(exam.id, exam.title)} className="btn" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "0.75rem", padding: "0.6rem" }}>
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
