@@ -14,21 +14,28 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-
     // Sanitize file name
     const ext = path.extname(file.name).toLowerCase();
     const baseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9]/g, "_");
     const fileName = `${Date.now()}_${baseName}${ext}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    await writeFile(filePath, buffer);
-
     const isPdf = ext === ".pdf";
     const fileType = isPdf ? "pdf" : "image";
-    const publicUrl = `/uploads/${fileName}`;
+    const mimeType = file.type || (isPdf ? "application/pdf" : ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg");
+
+    let publicUrl = "";
+
+    try {
+      // 1. Try local disk write (works in local development environment)
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+      const filePath = path.join(uploadDir, fileName);
+      await writeFile(filePath, buffer);
+      publicUrl = `/uploads/${fileName}`;
+    } catch (fsError) {
+      // 2. Fallback for Vercel serverless read-only filesystem (EROFS)
+      // Convert buffer to base64 Data URI for 100% serverless compatibility
+      publicUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
+    }
 
     return NextResponse.json({
       success: true,
