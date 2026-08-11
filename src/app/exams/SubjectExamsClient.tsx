@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Clock, Calendar, FileText, ArrowRight, BookOpen, Eye, Filter, ChevronDown } from "lucide-react";
+import ExamLiveCountdown from "@/app/components/ExamLiveCountdown";
 
 export type ExamItem = {
   id: string;
@@ -216,7 +217,7 @@ export default function SubjectExamsClient({ exams, isAdmin }: { exams: ExamItem
                 }}
               >
                 <div>
-                  {/* Badges Bar: Subject Tag & Status */}
+                  {/* Badges Bar: Subject Tag & Total Marks */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1.1rem" }}>
                     <span style={{
                       fontSize: "0.75rem",
@@ -235,33 +236,6 @@ export default function SubjectExamsClient({ exams, isAdmin }: { exams: ExamItem
                     </span>
                   </div>
 
-                  {/* Status Pill */}
-                  <div style={{ marginBottom: "1rem" }}>
-                    <span style={{
-                      fontSize: "0.725rem",
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      padding: "0.35rem 0.75rem",
-                      borderRadius: "9999px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.35rem",
-                      background: hasAttempted ? "#dcfce7" : sub?.status === "IN_PROGRESS" ? "#fef3c7" : isActive ? "#e0e7ff" : isUpcoming ? "#fef3c7" : "#f1f5f9",
-                      color: hasAttempted ? "#15803d" : sub?.status === "IN_PROGRESS" ? "#b45309" : isActive ? "#3730a3" : isUpcoming ? "#b45309" : "#64748b"
-                    }}>
-                      {hasAttempted
-                        ? sub.status === "GRADED" ? "✅ Graded (1/1 Attempt Used)" : "⏳ Submitted (1/1 Attempt Used)"
-                        : sub?.status === "IN_PROGRESS"
-                        ? "⏳ In Progress"
-                        : isActive
-                        ? "🟢 Active (1 Attempt Only)"
-                        : isUpcoming
-                        ? "⏳ Upcoming"
-                        : "🔴 Concluded"}
-                    </span>
-                  </div>
-
                   <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem", letterSpacing: "-0.01em" }}>
                     {exam.title}
                   </h3>
@@ -272,20 +246,13 @@ export default function SubjectExamsClient({ exams, isAdmin }: { exams: ExamItem
                     </p>
                   )}
 
-                  {/* Metadata Box */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", background: "#f8fafc", padding: "1rem", borderRadius: "0.85rem", marginBottom: "1.5rem", fontSize: "0.85rem", border: "1px solid #f1f5f9" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", color: "#334155" }}>
-                      <Calendar size={15} color="#4f46e5" />
-                      <span><strong>Date:</strong> {start.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", color: "#334155" }}>
-                      <Clock size={15} color="#4f46e5" />
-                      <span><strong>Duration:</strong> {exam.durationMinutes} Mins ({exam._count?.questions || 0} Questions)</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", color: "#334155" }}>
-                      <FileText size={15} color="#4f46e5" />
-                      <span><strong>Format:</strong> {exam.category === "CQ" ? "📄 CQ Written Paper" : "⚡ MCQ Auto-Graded"}</span>
-                    </div>
+                  {/* ⏰ REAL-TIME LIVE COUNTDOWN & SCHEDULE BOX */}
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <ExamLiveCountdown
+                      startTime={exam.startTime}
+                      endTime={exam.endTime}
+                      durationMinutes={exam.durationMinutes}
+                    />
                   </div>
                 </div>
 
@@ -324,8 +291,8 @@ export default function SubjectExamsClient({ exams, isAdmin }: { exams: ExamItem
                     Start Exam Session <ArrowRight size={17} />
                   </Link>
                 ) : isUpcoming ? (
-                  <button disabled className="btn" style={{ width: "100%", padding: "0.8rem", background: "#e2e8f0", color: "#94a3b8", cursor: "not-allowed", borderRadius: "0.85rem" }}>
-                    Scheduled for Later
+                  <button disabled className="btn" style={{ width: "100%", padding: "0.8rem", background: "#fef3c7", color: "#b45309", border: "1px solid #fde68a", cursor: "not-allowed", borderRadius: "0.85rem", fontWeight: 700 }}>
+                    ⏳ Upcoming (Starts Soon)
                   </button>
                 ) : (
                   <button disabled className="btn" style={{ width: "100%", padding: "0.8rem", background: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed", borderRadius: "0.85rem" }}>
