@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getStudentHistoryAction } from "@/app/actions/examActions";
+import { getAuthSessionAction } from "@/app/actions/authActions";
 import MediaViewerModal from "@/app/components/MediaViewerModal";
-import { Award, FileText, CheckCircle2, XCircle, ArrowLeft, History, Eye, Download, Sparkles, BookOpen, Maximize2, ExternalLink } from "lucide-react";
+import { Award, FileText, ArrowLeft, History, Eye, Download, BookOpen, Maximize2, Lock, ArrowRight } from "lucide-react";
 
 export default function StudentExamHistoryPage() {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [allExams, setAllExams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const [selectedQuestionExam, setSelectedQuestionExam] = useState<any>(null);
 
@@ -19,6 +21,14 @@ export default function StudentExamHistoryPage() {
 
   const loadHistory = async () => {
     setLoading(true);
+    const authRes = await getAuthSessionAction();
+    if (!authRes.isLoggedIn) {
+      setIsLoggedIn(false);
+      setLoading(false);
+      return;
+    }
+
+    setIsLoggedIn(true);
     const res = await getStudentHistoryAction();
     if (res.success) {
       setSubmissions(res.submissions || []);
@@ -45,11 +55,38 @@ export default function StudentExamHistoryPage() {
     );
   }
 
+  // SIGN IN PROTECTION: Block unauthenticated users
+  if (isLoggedIn === false) {
+    return (
+      <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "3rem 1rem" }}>
+        <div className="glass-panel" style={{ maxWidth: "560px", padding: "3rem 2rem", textAlign: "center", borderRadius: "1.5rem" }}>
+          <div style={{ background: "#fef2f2", width: "80px", height: "80px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem auto" }}>
+            <Lock size={40} color="#dc2626" />
+          </div>
+          <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.75rem", letterSpacing: "-0.02em" }}>
+            Sign In Required
+          </h2>
+          <p style={{ color: "#64748b", marginBottom: "2rem", fontSize: "1.05rem", lineHeight: 1.6 }}>
+            You must be signed in with your Username and Password to view past exam results, scores, and question papers.
+          </p>
+          <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+            <Link href="/login" className="btn btn-primary" style={{ padding: "0.85rem 1.75rem" }}>
+              Sign In Now <ArrowRight size={18} />
+            </Link>
+            <Link href="/register" className="btn btn-outline" style={{ padding: "0.85rem 1.5rem" }}>
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", padding: "3rem 0" }}>
       <div className="container" style={{ maxWidth: "1020px" }}>
-        <Link href="/exams" className="nav-link" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", marginBottom: "1.5rem", fontWeight: 600, color: "#64748b" }}>
-          <ArrowLeft size={16} /> Back to Active Exams Portal
+        <Link href="/" className="nav-link" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", marginBottom: "1.5rem", fontWeight: 600, color: "#64748b" }}>
+          <ArrowLeft size={16} /> Back to Home
         </Link>
 
         {/* Hero Banner */}
