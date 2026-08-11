@@ -16,6 +16,7 @@ export type CreateExamInput = {
   title: string;
   description?: string;
   category?: "MCQ" | "CQ";
+  subject?: "Math" | "Physics" | "Higher Math" | "Chemistry" | "General" | string;
   questionFileUrl?: string;
   questionFileType?: string;
   startTime: string; // ISO or datetime-local
@@ -33,6 +34,7 @@ export async function createExamAction(input: CreateExamInput) {
         title: input.title,
         description: input.description || "",
         category: input.category || "MCQ",
+        subject: input.subject || "General",
         questionFileUrl: input.questionFileUrl || null,
         questionFileType: input.questionFileType || null,
         startTime: new Date(input.startTime),
@@ -60,6 +62,7 @@ export async function updateExamAction(id: string, input: Partial<CreateExamInpu
     if (input.title !== undefined) updateData.title = input.title;
     if (input.description !== undefined) updateData.description = input.description;
     if (input.category !== undefined) updateData.category = input.category;
+    if (input.subject !== undefined) updateData.subject = input.subject;
     if (input.questionFileUrl !== undefined) updateData.questionFileUrl = input.questionFileUrl;
     if (input.questionFileType !== undefined) updateData.questionFileType = input.questionFileType;
     if (input.startTime) updateData.startTime = new Date(input.startTime);

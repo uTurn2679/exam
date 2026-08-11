@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAdminExamsAction, createExamAction, deleteExamAction, updateExamAction } from "@/app/actions/examActions";
 import { getAuthSessionAction } from "@/app/actions/authActions";
-import { Plus, Eye, Edit3, Trash2, Users, FileText, ShieldCheck, Sparkles, ArrowRight, Lock, Upload, FileCheck, Image as ImageIcon } from "lucide-react";
+import { Plus, Eye, Edit3, Trash2, Users, FileText, ShieldCheck, Sparkles, ArrowRight, Lock, Upload, FileCheck, BookOpen } from "lucide-react";
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<any[]>([]);
@@ -12,11 +12,12 @@ export default function AdminExamsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState<boolean | null>(null);
 
-  // Form state
+  // Form state with subject
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     category: "MCQ" as "MCQ" | "CQ",
+    subject: "Math",
     startTime: "",
     endTime: "",
     durationMinutes: 30,
@@ -98,6 +99,7 @@ export default function AdminExamsPage() {
         title: "",
         description: "",
         category: "MCQ",
+        subject: "Math",
         startTime: "",
         endTime: "",
         durationMinutes: 30,
@@ -148,17 +150,12 @@ export default function AdminExamsPage() {
           <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.75rem", letterSpacing: "-0.02em" }}>
             Admin Access Restricted
           </h2>
-          <p style={{ color: "#64748b", fontSize: "1rem", lineHeight: 1.6, marginBottom: "2rem" }}>
-            Students cannot access the instructor control panel. Please log in with an Administrator account to manage exams and grade papers.
+          <p style={{ color: "#64748b", marginBottom: "2rem", fontSize: "1.05rem" }}>
+            You need to sign in as Admin to manage exams, create question papers, and grade student submissions.
           </p>
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/login" className="btn btn-primary" style={{ padding: "0.8rem 1.5rem", borderRadius: "0.75rem" }}>
-              Sign In as Admin <ArrowRight size={16} />
-            </Link>
-            <Link href="/exams" className="btn btn-outline" style={{ padding: "0.8rem 1.5rem", borderRadius: "0.75rem" }}>
-              Go to Student Portal
-            </Link>
-          </div>
+          <Link href="/login" className="btn btn-primary" style={{ padding: "0.85rem 2rem" }}>
+            Go to Admin Login <ArrowRight size={18} />
+          </Link>
         </div>
       </div>
     );
@@ -167,36 +164,70 @@ export default function AdminExamsPage() {
   return (
     <div style={{ minHeight: "100vh", padding: "3rem 0" }}>
       <div className="container">
-        {/* Top Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2.5rem", flexWrap: "wrap", gap: "1.25rem" }}>
+        {/* Admin Header */}
+        <div className="hero-gradient" style={{
+          padding: "3rem 2.5rem",
+          color: "white",
+          marginBottom: "3rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "1.5rem"
+        }}>
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#e0e7ff", color: "#3730a3", padding: "0.3rem 0.8rem", borderRadius: "9999px", fontSize: "0.8rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-              <ShieldCheck size={14} /> Admin Control Center
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              background: "rgba(129, 140, 248, 0.2)",
+              color: "#a5b4fc",
+              border: "1px solid rgba(129, 140, 248, 0.35)",
+              padding: "0.4rem 1rem",
+              borderRadius: "9999px",
+              fontSize: "0.85rem",
+              fontWeight: 700,
+              marginBottom: "1rem"
+            }}>
+              <ShieldCheck size={16} /> Admin Management Portal
             </div>
-            <h1 style={{ fontSize: "2.25rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
-              Exam Management Dashboard
+
+            <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "white", marginBottom: "0.5rem", letterSpacing: "-0.02em" }}>
+              Exam Control & Grading Dashboard
             </h1>
-            <p style={{ color: "#64748b", fontSize: "0.95rem" }}>
-              Create MCQ & CQ (Creative Question) sessions, upload PDF/photo questions, and grade student submissions.
+
+            <p style={{ color: "#cbd5e1", fontSize: "1rem", maxWidth: "600px" }}>
+              Create subject-wise MCQ & CQ exams (Math, Physics, Higher Math, Chemistry), attach question papers, set strict countdown timers, and grade student answer papers.
             </p>
           </div>
-          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-            <Link href="/exams" className="btn btn-outline" style={{ borderRadius: "0.75rem" }}>
-              <Eye size={18} /> View Student Portal
-            </Link>
-            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary" style={{ borderRadius: "0.75rem" }}>
-              <Plus size={18} /> Create New Exam
-            </button>
-          </div>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn"
+            style={{
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "white",
+              padding: "0.85rem 1.6rem",
+              borderRadius: "0.85rem",
+              fontWeight: 700,
+              boxShadow: "0 10px 25px rgba(16, 185, 129, 0.4)"
+            }}
+          >
+            <Plus size={20} /> Create New Subject Exam
+          </button>
         </div>
 
-        {/* Exams Grid */}
+        {/* Exams Grid List */}
         {exams.length === 0 ? (
-          <div className="glass-panel" style={{ padding: "4rem 2rem", textAlign: "center", border: "2px dashed #cbd5e1", borderRadius: "1.5rem" }}>
+          <div className="glass-panel" style={{ padding: "4.5rem 2rem", textAlign: "center", border: "2px dashed #cbd5e1" }}>
             <FileText size={48} color="#94a3b8" style={{ margin: "0 auto 1rem auto" }} />
-            <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>No Exams Created Yet</h3>
-            <p style={{ color: "#64748b", marginBottom: "1.75rem" }}>Click below to create your first MCQ or CQ exam session.</p>
-            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary" style={{ borderRadius: "0.75rem" }}>
+            <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>
+              No Exams Created Yet
+            </h3>
+            <p style={{ color: "#64748b", marginBottom: "1.5rem" }}>
+              Click the button below to create your first subject assessment paper.
+            </p>
+            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
               <Plus size={18} /> Create Exam Now
             </button>
           </div>
@@ -215,8 +246,8 @@ export default function AdminExamsPage() {
                 }}
               >
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                       <span
                         onClick={() => handleTogglePublish(exam.id, exam.isPublished)}
                         style={{
@@ -231,8 +262,13 @@ export default function AdminExamsPage() {
                       >
                         {exam.isPublished ? "● Published" : "○ Draft"}
                       </span>
+
+                      <span style={{ fontSize: "0.75rem", fontWeight: 800, background: "#eff6ff", color: "#1d4ed8", padding: "0.35rem 0.65rem", borderRadius: "9999px", border: "1px solid #bfdbfe" }}>
+                        📚 {exam.subject || "General"}
+                      </span>
+
                       <span style={{ fontSize: "0.75rem", fontWeight: 800, background: exam.category === "CQ" ? "#fef3c7" : "#e0e7ff", color: exam.category === "CQ" ? "#b45309" : "#3730a3", padding: "0.35rem 0.65rem", borderRadius: "9999px" }}>
-                        {exam.category === "CQ" ? "📄 CQ (Creative)" : "⚡ MCQ"}
+                        {exam.category === "CQ" ? "📄 CQ Written" : "⚡ MCQ"}
                       </span>
                     </div>
 
@@ -294,13 +330,30 @@ export default function AdminExamsPage() {
                 <Sparkles size={16} /> New Assessment Session
               </div>
               <h2 style={{ fontSize: "1.6rem", fontWeight: 800, marginBottom: "1.5rem", color: "#0f172a", letterSpacing: "-0.02em" }}>
-                Create Exam Paper
+                Create Subject Exam Paper
               </h2>
 
               <form onSubmit={handleCreate}>
+                {/* Subject Selector */}
+                <div style={{ marginBottom: "1.25rem" }}>
+                  <label className="input-label">Select Subject *</label>
+                  <select
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    className="input-field"
+                    style={{ fontWeight: 700, color: "#1e293b" }}
+                  >
+                    <option value="Math">📐 Math (General Math)</option>
+                    <option value="Physics">⚡ Physics</option>
+                    <option value="Higher Math">📊 Higher Math</option>
+                    <option value="Chemistry">🧪 Chemistry</option>
+                    <option value="General">📚 General Subject</option>
+                  </select>
+                </div>
+
                 {/* Category Radio Toggle: MCQ vs CQ */}
                 <div style={{ marginBottom: "1.25rem" }}>
-                  <label className="input-label">Select Exam Type *</label>
+                  <label className="input-label">Select Exam Format *</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                     <label
                       onClick={() => setFormData({ ...formData, category: "MCQ" })}
@@ -318,8 +371,8 @@ export default function AdminExamsPage() {
                         fontSize: "0.9rem"
                       }}
                     >
-                      <input type="radio" name="examCategory" checked={formData.category === "MCQ"} onChange={() => setFormData({ ...formData, category: "MCQ" })} style={{ accentColor: "#4f46e5" }} />
-                      ⚡ MCQ Exam (Auto-graded)
+                      <input type="radio" checked={formData.category === "MCQ"} onChange={() => {}} style={{ display: "none" }} />
+                      ⚡ MCQ (Auto-Graded)
                     </label>
 
                     <label
@@ -330,26 +383,47 @@ export default function AdminExamsPage() {
                         gap: "0.5rem",
                         padding: "0.75rem 1rem",
                         borderRadius: "0.75rem",
-                        border: formData.category === "CQ" ? "2px solid #4f46e5" : "1px solid #e2e8f0",
-                        background: formData.category === "CQ" ? "#f5f3ff" : "#f8fafc",
-                        color: formData.category === "CQ" ? "#4338ca" : "#475569",
+                        border: formData.category === "CQ" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
+                        background: formData.category === "CQ" ? "#fffbeb" : "#f8fafc",
+                        color: formData.category === "CQ" ? "#b45309" : "#475569",
                         fontWeight: formData.category === "CQ" ? 800 : 500,
                         cursor: "pointer",
                         fontSize: "0.9rem"
                       }}
                     >
-                      <input type="radio" name="examCategory" checked={formData.category === "CQ"} onChange={() => setFormData({ ...formData, category: "CQ" })} style={{ accentColor: "#4f46e5" }} />
-                      📄 CQ (Creative / Written)
+                      <input type="radio" checked={formData.category === "CQ"} onChange={() => {}} style={{ display: "none" }} />
+                      📄 CQ (Creative Written Upload)
                     </label>
                   </div>
                 </div>
+
+                {/* If CQ exam, allow Admin to upload Question Paper (PDF / Image) */}
+                {formData.category === "CQ" && (
+                  <div style={{ background: "#fffbeb", padding: "1.25rem", borderRadius: "1rem", border: "1px solid #fcd34d", marginBottom: "1.25rem" }}>
+                    <label className="input-label" style={{ color: "#92400e" }}>
+                      Upload Question Paper PDF or Question Photo *
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={handleFileUpload}
+                      style={{ marginBottom: "0.5rem", fontSize: "0.85rem" }}
+                    />
+                    {uploadingFile && <p style={{ fontSize: "0.85rem", color: "#b45309" }}>Uploading question file...</p>}
+                    {questionFileUrl && (
+                      <p style={{ fontSize: "0.85rem", color: "#15803d", fontWeight: 700 }}>
+                        ✓ Question Paper Attached: <a href={questionFileUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Preview File</a>
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div style={{ marginBottom: "1.25rem" }}>
                   <label className="input-label">Exam Title *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Midterm Physics Assessment 2026"
+                    placeholder="e.g. Higher Math Chapter 3 Midterm Test"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="input-field"
@@ -357,36 +431,15 @@ export default function AdminExamsPage() {
                 </div>
 
                 <div style={{ marginBottom: "1.25rem" }}>
-                  <label className="input-label">Description / Instructions</label>
+                  <label className="input-label">Description (Optional)</label>
                   <textarea
-                    rows={3}
-                    placeholder="Instructions for students taking this exam..."
+                    rows={2}
+                    placeholder="Brief instructions or syllabus topics covered..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="input-field"
                   />
                 </div>
-
-                {/* Question PDF/Image upload for CQ exams */}
-                {formData.category === "CQ" && (
-                  <div style={{ background: "#f8fafc", padding: "1.25rem", borderRadius: "0.85rem", border: "1px solid #e2e8f0", marginBottom: "1.25rem" }}>
-                    <label className="input-label" style={{ color: "#4338ca" }}>
-                      Upload Question Paper (PDF or Image)
-                    </label>
-                    <input
-                      type="file"
-                      accept="application/pdf,image/*"
-                      onChange={handleFileUpload}
-                      style={{ marginTop: "0.35rem", marginBottom: "0.5rem" }}
-                    />
-                    {uploadingFile && <p style={{ fontSize: "0.8rem", color: "#4f46e5" }}>Uploading file to server...</p>}
-                    {questionFileUrl && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#16a34a", fontSize: "0.85rem", fontWeight: 700, marginTop: "0.35rem" }}>
-                        <FileCheck size={16} /> Question paper uploaded! ({questionFileType?.toUpperCase()})
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
                   <div>
@@ -399,8 +452,9 @@ export default function AdminExamsPage() {
                       className="input-field"
                     />
                   </div>
+
                   <div>
-                    <label className="input-label">Deadline End Date & Time *</label>
+                    <label className="input-label">End Date & Time *</label>
                     <input
                       type="datetime-local"
                       required
@@ -411,9 +465,9 @@ export default function AdminExamsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "1.75rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.85rem", marginBottom: "1.75rem" }}>
                   <div>
-                    <label className="input-label">Timer (Mins)</label>
+                    <label className="input-label">Timer (Mins) *</label>
                     <input
                       type="number"
                       required
@@ -423,23 +477,23 @@ export default function AdminExamsPage() {
                       className="input-field"
                     />
                   </div>
+
                   <div>
-                    <label className="input-label">Total Marks</label>
+                    <label className="input-label">Total Marks *</label>
                     <input
                       type="number"
                       required
-                      min={1}
                       value={formData.totalMarks}
                       onChange={(e) => setFormData({ ...formData, totalMarks: Number(e.target.value) })}
                       className="input-field"
                     />
                   </div>
+
                   <div>
-                    <label className="input-label">Pass Marks</label>
+                    <label className="input-label">Pass Marks *</label>
                     <input
                       type="number"
                       required
-                      min={0}
                       value={formData.passMarks}
                       onChange={(e) => setFormData({ ...formData, passMarks: Number(e.target.value) })}
                       className="input-field"
@@ -447,11 +501,19 @@ export default function AdminExamsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
-                  <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-outline" style={{ borderRadius: "0.75rem" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.85rem" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="btn btn-outline"
+                  >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary" style={{ borderRadius: "0.75rem" }}>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                  >
                     Save & Create Exam
                   </button>
                 </div>
