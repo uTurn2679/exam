@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Clock, Calendar, FileText, ArrowRight, BookOpen, Layers, CheckSquare, Eye, Sparkles } from "lucide-react";
+import { Clock, Calendar, FileText, ArrowRight, BookOpen, Eye, Filter, ChevronDown } from "lucide-react";
 
 export type ExamItem = {
   id: string;
@@ -60,9 +60,57 @@ export default function SubjectExamsClient({ exams, isAdmin }: { exams: ExamItem
 
   return (
     <div>
-      {/* Subject Filter Bar */}
-      <div style={{
-        display: "flex",
+      {/* 📱 MOBILE DROPDOWN SELECTOR (Shown on mobile screens <= 768px) */}
+      <div className="mobile-subject-dropdown" style={{ marginBottom: "2rem" }}>
+        <label className="input-label" style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#4f46e5", fontSize: "0.95rem" }}>
+          <Filter size={18} /> Select Subject Filter:
+        </label>
+        
+        <div style={{ position: "relative" }}>
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className="input-field"
+            style={{
+              padding: "0.85rem 2.75rem 0.85rem 1.25rem",
+              fontWeight: 800,
+              fontSize: "1rem",
+              borderRadius: "0.95rem",
+              border: "2px solid #6366f1",
+              background: "#ffffff",
+              color: "#0f172a",
+              boxShadow: "0 8px 20px -4px rgba(99, 102, 241, 0.25)",
+              appearance: "none",
+              WebkitAppearance: "none",
+              cursor: "pointer"
+            }}
+          >
+            {SUBJECT_LIST.map((subj) => {
+              const count = subj.id === "ALL" ? exams.length : exams.filter(e => (e.subject || "General").toLowerCase() === subj.id.toLowerCase()).length;
+              return (
+                <option key={subj.id} value={subj.id}>
+                  {subj.icon} {subj.label} ({count} Exams)
+                </option>
+              );
+            })}
+          </select>
+
+          <ChevronDown
+            size={20}
+            color="#4f46e5"
+            style={{
+              position: "absolute",
+              right: "1.1rem",
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none"
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 💻 DESKTOP PILL TABS (Shown on desktop screens > 768px) */}
+      <div className="desktop-subject-pills" style={{
         alignItems: "center",
         gap: "0.65rem",
         marginBottom: "2.5rem",
@@ -110,6 +158,24 @@ export default function SubjectExamsClient({ exams, isAdmin }: { exams: ExamItem
           );
         })}
       </div>
+
+      <style jsx>{`
+        .mobile-subject-dropdown {
+          display: block;
+        }
+        .desktop-subject-pills {
+          display: none;
+        }
+
+        @media (min-width: 769px) {
+          .mobile-subject-dropdown {
+            display: none;
+          }
+          .desktop-subject-pills {
+            display: flex;
+          }
+        }
+      `}</style>
 
       {/* Exam Grid */}
       {filteredExams.length === 0 ? (
