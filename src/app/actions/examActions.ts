@@ -26,6 +26,29 @@ export type CreateExamInput = {
   passMarks?: number;
 };
 
+function parseLocalInputToDate(inputStr: string | Date): Date {
+  if (!inputStr) return new Date();
+  if (inputStr instanceof Date) return inputStr;
+
+  // If input is an ISO string with Z or explicit timezone offset, parse natively
+  if (inputStr.includes("Z") || inputStr.includes("+") || (inputStr.includes("-") && inputStr.length > 19)) {
+    return new Date(inputStr);
+  }
+
+  // Handle HTML datetime-local format "YYYY-MM-DDTHH:mm" without timezone as LOCAL TIME
+  const [datePart, timePart] = inputStr.split("T");
+  if (datePart && timePart) {
+    const [year, month, day] = datePart.split("-").map(Number);
+    const timeComponents = timePart.split(":");
+    const hours = Number(timeComponents[0] || 0);
+    const minutes = Number(timeComponents[1] || 0);
+    const seconds = Number(timeComponents[2] || 0);
+    return new Date(year, month - 1, day, hours, minutes, seconds);
+  }
+
+  return new Date(inputStr);
+}
+
 export async function createExamAction(input: CreateExamInput) {
   try {
     await verifyAdminRole();
@@ -37,8 +60,8 @@ export async function createExamAction(input: CreateExamInput) {
         subject: input.subject || "General",
         questionFileUrl: input.questionFileUrl || null,
         questionFileType: input.questionFileType || null,
-        startTime: new Date(input.startTime),
-        endTime: new Date(input.endTime),
+        startTime: parseLocalInputToDate(input.startTime),
+        endTime: parseLocalInputToDate(input.endTime),
         durationMinutes: Number(input.durationMinutes),
         totalMarks: Number(input.totalMarks || 100),
         passMarks: Number(input.passMarks || 40),
@@ -65,8 +88,12 @@ export async function updateExamAction(id: string, input: Partial<CreateExamInpu
     if (input.subject !== undefined) updateData.subject = input.subject;
     if (input.questionFileUrl !== undefined) updateData.questionFileUrl = input.questionFileUrl;
     if (input.questionFileType !== undefined) updateData.questionFileType = input.questionFileType;
-    if (input.startTime) updateData.startTime = new Date(input.startTime);
-    if (input.endTime) updateData.endTime = new Date(input.endTime);
+    if (input.startTime) updateData.startTime = parseLocalInputToDate(input.startTime);
+    if (input.endTime) updateData.endTime = parseLocalInputToDate(input.endTime);
+    if (input.durationMinutes !== undefined) updateData.durationMinutes = Number(input.durationMinutes);
+    if (input.totalMarks !== undefined) updateData.totalMarks = Number(input.totalMarks);
+    if (input.passMarks !== undefined) updateData.passMarks = Number(input.passMarks);
+    if (input.isPublished !== undefined) updateData.isPublished = input.isPublished;
     if (input.durationMinutes !== undefined) updateData.durationMinutes = Number(input.durationMinutes);
     if (input.totalMarks !== undefined) updateData.totalMarks = Number(input.totalMarks);
     if (input.passMarks !== undefined) updateData.passMarks = Number(input.passMarks);
