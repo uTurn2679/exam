@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { logoutUserAction } from "@/app/actions/authActions";
-import { GraduationCap, ShieldCheck, BookOpen, LogIn, UserPlus, LogOut, User as UserIcon, Sparkles, History } from "lucide-react";
+import { GraduationCap, ShieldCheck, LogIn, UserPlus, LogOut, User as UserIcon, Sparkles, History, Home } from "lucide-react";
 
 export default async function Navbar() {
   const cookieStore = await cookies();
@@ -48,49 +48,49 @@ export default async function Navbar() {
           </div>
         </Link>
 
-        {/* Links & Auth State */}
+        {/* Navbar Items */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-          <Link href="/exams" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
-            <BookOpen size={16} /> Exams Portal
+          
+          {/* Home Link */}
+          <Link href="/" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+            <Home size={16} color="#4f46e5" /> Home
           </Link>
 
-          <Link href="/exams/history" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
-            <History size={16} color="#4f46e5" /> History & Results
-          </Link>
+          {/* History & Results Link (ONLY shown when Signed In) */}
+          {isLoggedIn && (
+            <Link href="/exams/history" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
+              <History size={16} color="#4f46e5" /> History & Results
+            </Link>
+          )}
 
+          {/* Admin Dashboard */}
           {isAdmin && (
             <Link href="/admin/exams" className="btn btn-dark" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
               <ShieldCheck size={16} color="#818cf8" /> Admin Dashboard
             </Link>
           )}
 
+          {/* Signed In State: Profile & Exit */}
           {isLoggedIn ? (
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              background: "#ffffff",
-              padding: "0.35rem 0.85rem",
-              borderRadius: "0.85rem",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)"
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <div style={{
-                  background: isAdmin ? "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)" : "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-                  color: isAdmin ? "#3730a3" : "#92400e",
-                  padding: "0.35rem",
-                  borderRadius: "50%",
-                  display: "flex"
-                }}>
-                  <UserIcon size={15} />
-                </div>
-                <div style={{ fontSize: "0.825rem" }}>
-                  <strong style={{ display: "block", color: "#0f172a", lineHeight: 1.1, fontWeight: 700 }}>{userName || "User"}</strong>
-                  <span style={{ fontSize: "0.675rem", color: isAdmin ? "#4f46e5" : "#d97706", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>{role}</span>
-                </div>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+              {/* Profile Link */}
+              <Link
+                href="/profile"
+                className="btn btn-outline"
+                style={{
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.85rem",
+                  borderRadius: "0.75rem",
+                  borderColor: "#818cf8",
+                  background: "#f5f3ff",
+                  color: "#3730a3",
+                  fontWeight: 700
+                }}
+              >
+                <UserIcon size={16} color="#4f46e5" /> {userName || "Profile"}
+              </Link>
 
+              {/* Logout Button */}
               <form action={logoutUserAction} style={{ display: "inline" }}>
                 <button
                   type="submit"
@@ -98,22 +98,23 @@ export default async function Navbar() {
                     background: "#fef2f2",
                     color: "#dc2626",
                     border: "1px solid #fecaca",
-                    padding: "0.38rem 0.7rem",
-                    borderRadius: "0.6rem",
-                    fontSize: "0.8rem",
+                    padding: "0.5rem 0.85rem",
+                    borderRadius: "0.75rem",
+                    fontSize: "0.85rem",
                     fontWeight: 700,
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "0.3rem",
+                    gap: "0.35rem",
                     transition: "all 0.2s ease"
                   }}
                 >
-                  <LogOut size={14} /> Exit
+                  <LogOut size={15} /> Exit
                 </button>
               </form>
             </div>
           ) : (
+            /* Signed Out State: Sign In & Sign Up */
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <Link href="/login" className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}>
                 <LogIn size={16} /> Sign In
