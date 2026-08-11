@@ -52,7 +52,7 @@ export async function registerUserAction(input: RegisterInput) {
 }
 
 export type LoginInput = {
-  email: string; // Can be "habib@gmail.com" or "habib"
+  email: string; // Can be "habib@gmail.com" or "habib" or "22cseahsanhabib@gmail.com"
   password: string;
   targetRole?: "STUDENT" | "ADMIN";
 };
@@ -70,39 +70,27 @@ export async function loginUserAction(input: LoginInput) {
     if (isAdminAttempt) {
       const validAdminIdentifiers = ["habib@gmail.com", "habib", "22cseahsanhabib@gmail.com"];
       if (validAdminIdentifiers.includes(inputClean) && input.password === "267993") {
-        let adminUser = await prisma.user.findFirst({
-          where: { role: "ADMIN" },
-        });
+        let adminId = "admin_static_session";
 
-        if (!adminUser) {
-          adminUser = await prisma.user.create({
-            data: {
-              name: "habib",
-              email: "habib@gmail.com",
-              password: "267993",
-              role: "ADMIN",
-            },
+        try {
+          const adminUser = await prisma.user.findFirst({
+            where: { role: "ADMIN" },
           });
-        } else {
-          // Keep admin email & password updated to habib@gmail.com / 267993
-          adminUser = await prisma.user.update({
-            where: { id: adminUser.id },
-            data: {
-              email: "habib@gmail.com",
-              password: "267993",
-              name: "habib",
-            },
-          });
+          if (adminUser) {
+            adminId = adminUser.id;
+          }
+        } catch (e) {
+          // Ignore read-only or DB lookup error on Vercel deployment
         }
 
         const cookieStore = await cookies();
-        cookieStore.set("auth_session", adminUser.id, { httpOnly: true, path: "/" });
+        cookieStore.set("auth_session", adminId, { httpOnly: true, path: "/" });
         cookieStore.set("auth_user_name", "habib", { httpOnly: false, path: "/" });
         cookieStore.set("auth_user_email", "habib@gmail.com", { httpOnly: false, path: "/" });
         cookieStore.set("auth_role", "ADMIN", { httpOnly: false, path: "/" });
 
         revalidatePath("/");
-        return { success: true, user: { id: adminUser.id, name: "habib", email: "habib@gmail.com", role: "ADMIN" } };
+        return { success: true, user: { id: adminId, name: "habib", email: "habib@gmail.com", role: "ADMIN" } };
       } else {
         return { success: false, error: "Invalid Admin email or password." };
       }
