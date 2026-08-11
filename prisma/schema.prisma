@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id          String           @id @default(cuid())
+  name        String
+  email       String           @unique
+  password    String
+  role        String           @default("STUDENT") // "STUDENT" or "ADMIN"
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  submissions ExamSubmission[]
+}
+
+model Exam {
+  id               String           @id @default(cuid())
+  title            String
+  description      String?
+  category         String           @default("MCQ") // "MCQ" or "CQ"
+  questionFileUrl  String?          // PDF or image uploaded by Admin for CQ exams
+  questionFileType String?          // "pdf" or "image"
+  startTime        DateTime
+  endTime          DateTime
+  durationMinutes  Int
+  totalMarks       Float            @default(100)
+  passMarks        Float            @default(40)
+  isPublished      Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  questions        Question[]
+  submissions      ExamSubmission[]
+}
+
+model Question {
+  id             String          @id @default(cuid())
+  examId         String
+  exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questionText   String
+  questionType   String          @default("MCQ") // "MCQ" or "TEXT"
+  options        String?         // JSON string array of options: ["Option 1", "Option 2", ...]
+  correctAnswer  String?         // For MCQ auto-grading
+  marks          Float           @default(5.0)
+  order          Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  studentAnswers StudentAnswer[]
+}
+
+model ExamSubmission {
+  id             String          @id @default(cuid())
+  examId         String
+  exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  studentName    String
+  studentEmail   String?
+  studentPhone   String?
+  answerFileUrl  String?         // Legacy single file URL
+  answerFileType String?         // "pdf" or "image"
+  answerFiles    String?         // JSON string array of multiple uploaded answer files: ["/uploads/img1.jpg", "/uploads/img2.jpg"]
+  startTime      DateTime        @default(now())
+  submittedAt    DateTime?
+  totalScore     Float?
+  status         String          @default("IN_PROGRESS") // "IN_PROGRESS", "SUBMITTED", "GRADED", "TIME_EXPIRED"
+  feedback       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  answers        StudentAnswer[]
+}
+
+model StudentAnswer {
+  id             String         @id @default(cuid())
+  submissionId   String
+  submission     ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption String?        // For MCQ
+  writtenAnswer  String?        // For TEXT
+  isCorrect      Boolean?
+  marksObtained  Float?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
