@@ -92,7 +92,9 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
   };
 
   const compressImageIfNeeded = async (file: File): Promise<File> => {
-    if (!file.type.startsWith("image/")) return file;
+    const isImg = file.type.startsWith("image/") || !!file.name.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i);
+    if (!isImg) return file;
+
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -101,7 +103,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const maxDim = 1800; // 1800px max dimension ensures high clarity for reading text
+          const maxDim = 1200; // 1200px max dimension ensures high clarity while keeping size ~150KB-250KB
 
           if (width > maxDim || height > maxDim) {
             if (width > height) {
@@ -117,11 +119,13 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
           canvas.height = height;
           const ctx = canvas.getContext("2d");
           if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob(
               (blob) => {
                 if (blob) {
-                  const compressedFile = new File([blob], file.name, {
+                  const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
                     type: "image/jpeg",
                     lastModified: Date.now(),
                   });
@@ -131,7 +135,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
                 }
               },
               "image/jpeg",
-              0.82
+              0.70
             );
           } else {
             resolve(file);
