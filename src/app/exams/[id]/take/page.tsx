@@ -32,7 +32,9 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
+  // Submission loading & live percentage progress
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitPercent, setSubmitPercent] = useState<number>(0);
   const [isTimeExpired, setIsTimeExpired] = useState(false);
 
   // Fullscreen Lightbox state
@@ -229,23 +231,45 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
   const executeSubmission = async () => {
     if (!submissionId || isSubmitting) return;
     setIsSubmitting(true);
+    setSubmitPercent(10);
 
-    const res = await submitExamAnswersAction({
-      submissionId,
-      answersMap: answers,
-      answerFiles: uploadedFiles,
-    });
+    // Live progress simulation timer while submitting server action
+    const progressTimer = setInterval(() => {
+      setSubmitPercent((prev) => {
+        if (prev >= 94) return 94;
+        return prev + Math.floor(Math.random() * 12) + 8;
+      });
+    }, 200);
 
-    if (res.success) {
-      router.push(`/exams/${examId}/result/${submissionId}`);
-    } else {
-      if (res.isExpired) {
-        setIsTimeExpired(true);
-        setError("Exam time limit has expired! Submissions after the countdown timer ends are strictly prohibited.");
+    try {
+      const res = await submitExamAnswersAction({
+        submissionId,
+        answersMap: answers,
+        answerFiles: uploadedFiles,
+      });
+
+      clearInterval(progressTimer);
+
+      if (res.success) {
+        setSubmitPercent(100);
+        setTimeout(() => {
+          router.push(`/exams/${examId}/result/${submissionId}`);
+        }, 350);
       } else {
-        alert("Error submitting exam: " + (res.error || "Please try again."));
+        if (res.isExpired) {
+          setIsTimeExpired(true);
+          setError("Exam time limit has expired! Submissions after the countdown timer ends are strictly prohibited.");
+        } else {
+          alert("Error submitting exam: " + (res.error || "Please try again."));
+        }
+        setIsSubmitting(false);
+        setSubmitPercent(0);
       }
+    } catch (err: any) {
+      clearInterval(progressTimer);
+      alert("Error submitting exam: " + (err?.message || "Please check your network."));
       setIsSubmitting(false);
+      setSubmitPercent(0);
     }
   };
 
@@ -382,11 +406,19 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
                 padding: "0.65rem 1.35rem",
                 borderRadius: "0.75rem",
                 fontSize: "0.9rem",
-                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                background: isSubmitting ? "#64748b" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                 boxShadow: "0 8px 18px rgba(16, 185, 129, 0.35)"
               }}
             >
-              <Send size={16} /> Submit Exam Paper
+              {isSubmitting ? (
+                <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span className="animate-spin">⏳</span> Please wait... ({submitPercent}%)
+                </span>
+              ) : (
+                <>
+                  <Send size={16} /> Submit Exam Paper
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -661,13 +693,94 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
               padding: "1rem 2.5rem",
               borderRadius: "1rem",
               fontSize: "1.1rem",
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              boxShadow: "0 12px 28px rgba(16, 185, 129, 0.4)"
+              background: isSubmitting ? "#64748b" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              boxShadow: "0 12px 28px rgba(16, 185, 129, 0.4)",
+              transition: "all 0.2s ease"
             }}
           >
-            <Send size={20} /> Submit Complete Exam Paper ({uploadedFiles.length} Page(s))
+            {isSubmitting ? (
+              <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span className="animate-spin">⏳</span> Please wait... Submitting {uploadedFiles.length} Page(s) ({submitPercent}%)...
+              </span>
+            ) : (
+              <>
+                <Send size={20} /> Submit Complete Exam Paper ({uploadedFiles.length} Page(s))
+              </>
+            )}
           </button>
         </div>
+
+        {/* 🌟 FULLSCREEN SUBMISSION LOADING OVERLAY WITH LIVE PERCENTAGE */}
+        {isSubmitting && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "1.5rem"
+          }}>
+            <div className="glass-panel" style={{
+              background: "white",
+              color: "#0f172a",
+              padding: "2.5rem 2rem",
+              borderRadius: "1.75rem",
+              textAlign: "center",
+              maxWidth: "460px",
+              width: "100%",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+            }}>
+              <div className="animate-spin" style={{
+                width: "56px",
+                height: "56px",
+                border: "5px solid #e0e7ff",
+                borderTopColor: "#10b981",
+                borderRadius: "50%",
+                margin: "0 auto 1.5rem auto"
+              }} />
+
+              <h3 style={{ fontSize: "1.6rem", fontWeight: 800, marginBottom: "0.5rem", color: "#0f172a", letterSpacing: "-0.02em" }}>
+                Please Wait...
+              </h3>
+              
+              <p style={{ color: "#475569", fontSize: "0.95rem", marginBottom: "1.75rem", lineHeight: 1.5 }}>
+                Submitting your exam answer paper ({uploadedFiles.length} page(s) attached)...
+              </p>
+
+              {/* Progress Bar Container */}
+              <div style={{
+                background: "#f1f5f9",
+                borderRadius: "9999px",
+                height: "14px",
+                width: "100%",
+                overflow: "hidden",
+                marginBottom: "1rem",
+                border: "1px solid #cbd5e1"
+              }}>
+                <div style={{
+                  width: `${submitPercent}%`,
+                  height: "100%",
+                  background: "linear-gradient(90deg, #10b981 0%, #059669 100%)",
+                  borderRadius: "9999px",
+                  transition: "width 0.3s ease"
+                }} />
+              </div>
+
+              <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "#059669", letterSpacing: "0.02em" }}>
+                {submitPercent}% Complete
+              </div>
+
+              <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "1.25rem", fontWeight: 600 }}>
+                ⚠️ Please do not close or refresh this page.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* FULLSCREEN LIGHTBOX MODAL */}
         <MediaViewerModal
