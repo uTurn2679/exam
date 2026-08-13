@@ -30,19 +30,23 @@ function parseLocalInputToDate(inputStr: string | Date): Date {
   if (!inputStr) return new Date();
   if (inputStr instanceof Date) return inputStr;
 
-  const cleanStr = String(inputStr);
-  const [datePart, timePart] = cleanStr.split("T");
-  if (datePart && timePart) {
-    const [year, month, day] = datePart.split("-").map(Number);
-    const timeComponents = timePart.split(":");
-    const hours = Number(timeComponents[0] || 0);
-    const minutes = Number(timeComponents[1] || 0);
-    const seconds = Number(timeComponents[2] || 0);
+  const str = String(inputStr).trim();
 
-    return new Date(year, month - 1, day, hours, minutes, seconds);
+  // If already an ISO string with explicit Z or timezone offset (+06:00)
+  if (str.includes("Z") || str.includes("+")) {
+    return new Date(str);
   }
 
-  return new Date(inputStr);
+  // If format is "YYYY-MM-DDTHH:mm" from datetime-local input, append +06:00 (Bangladesh Local Time)
+  if (str.includes("T")) {
+    const parts = str.split("T");
+    const dateStr = parts[0];
+    let timeStr = parts[1];
+    if (timeStr.length === 5) timeStr += ":00";
+    return new Date(`${dateStr}T${timeStr}+06:00`);
+  }
+
+  return new Date(str);
 }
 
 export async function createExamAction(input: CreateExamInput) {
