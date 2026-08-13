@@ -439,7 +439,21 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
       await prisma.$transaction(answerCreatePromises);
     }
 
-    const updatedStatus = hasWrittenQuestions || answerFiles.length > 0 ? "SUBMITTED" : "GRADED";
+    // Read answer files: Use payload answerFiles if provided; otherwise fallback to existing answerFiles in DB
+    let finalAnswerFiles = answerFiles;
+    if (!finalAnswerFiles || finalAnswerFiles.length === 0) {
+      if (submission.answerFiles) {
+        try {
+          finalAnswerFiles = JSON.parse(submission.answerFiles);
+        } catch (e) {
+          finalAnswerFiles = submission.answerFileUrl ? [submission.answerFileUrl] : [];
+        }
+      } else if (submission.answerFileUrl) {
+        finalAnswerFiles = [submission.answerFileUrl];
+      }
+    }
+
+    const updatedStatus = hasWrittenQuestions || finalAnswerFiles.length > 0 ? "SUBMITTED" : "GRADED";
 
     const updatedSubmission = await prisma.examSubmission.update({
       where: { id: submissionId },
@@ -447,8 +461,8 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
         submittedAt: new Date(),
         totalScore: calculatedScore,
         status: updatedStatus,
-        answerFileUrl: answerFiles[0] || null, // Primary file
-        answerFiles: answerFiles.length > 0 ? JSON.stringify(answerFiles) : null,
+        answerFileUrl: finalAnswerFiles[0] || null, // Primary file
+        answerFiles: finalAnswerFiles.length > 0 ? JSON.stringify(finalAnswerFiles) : null,
       },
     });
 

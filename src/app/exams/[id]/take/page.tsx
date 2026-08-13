@@ -107,7 +107,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const maxDim = 1000; // 1000px keeps handwritten text crisp while producing ~100KB files
+          const maxDim = 900; // 900px keeps handwritten text crisp while producing ~60KB ultra-lightweight files
 
           if (width > maxDim || height > maxDim) {
             if (width > height) {
@@ -139,7 +139,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
                 }
               },
               "image/jpeg",
-              0.65
+              0.60
             );
           } else {
             resolve(file);
@@ -172,6 +172,9 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
         const fileToUpload = await compressImageIfNeeded(rawFile);
         const data = new FormData();
         data.append("file", fileToUpload);
+        if (submissionId) {
+          data.append("submissionId", submissionId);
+        }
 
         const res = await fetch("/api/upload", {
           method: "POST",
