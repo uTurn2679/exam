@@ -6,7 +6,7 @@ import { getExamWithQuestionsAction, startStudentExamSubmissionAction, submitExa
 import { getAuthSessionAction, getUserProfileAction } from "@/app/actions/authActions";
 import ExamTimer from "@/app/components/ExamTimer";
 import MediaViewerModal from "@/app/components/MediaViewerModal";
-import { AlertCircle, Clock, Send, Lock, FileText, Upload, FileCheck, Image as ImageIcon, XCircle, Trash2, CheckCircle2, Maximize2, Download, ArrowRight, UserCheck } from "lucide-react";
+import { AlertCircle, Clock, Send, Lock, FileText, Upload, FileCheck, Image as ImageIcon, XCircle, Trash2, CheckCircle2, Maximize2, Download, ArrowRight, UserCheck, Images } from "lucide-react";
 import Link from "next/link";
 
 export default function TakeExamPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,8 +27,9 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
   // MCQ & Text Answers state
   const [answers, setAnswers] = useState<Record<string, { selectedOption?: string; writtenAnswer?: string }>>({});
 
-  // Multiple Student Answer File Uploads (Multiple Pictures/PDFs)
+  // Multiple Student Answer File Uploads (Supports 20+ Photos/PDFs)
   const [uploadingAnswerFile, setUploadingAnswerFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,6 +92,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
     setViewerTitle(title);
   };
 
+  // Fast & Sharp Image Compressor (1000px max dimension, 0.65 quality -> ~100KB per photo)
   const compressImageIfNeeded = async (file: File): Promise<File> => {
     const isImg = file.type.startsWith("image/") || !!file.name.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i);
     if (!isImg) return file;
@@ -103,7 +105,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const maxDim = 1200; // 1200px max dimension ensures high clarity while keeping size ~150KB-250KB
+          const maxDim = 1000; // 1000px keeps handwritten text crisp while producing ~100KB files
 
           if (width > maxDim || height > maxDim) {
             if (width > height) {
@@ -135,7 +137,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
                 }
               },
               "image/jpeg",
-              0.70
+              0.65
             );
           } else {
             resolve(file);
@@ -159,8 +161,10 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
     }
 
     setUploadingAnswerFile(true);
+    setUploadProgress({ current: 0, total: files.length });
 
     for (let i = 0; i < files.length; i++) {
+      setUploadProgress({ current: i + 1, total: files.length });
       const rawFile = files[i];
       try {
         const fileToUpload = await compressImageIfNeeded(rawFile);
@@ -182,7 +186,9 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
         alert(`Error uploading ${rawFile.name}: ${err?.message || "Connection error"}`);
       }
     }
+
     setUploadingAnswerFile(false);
+    setUploadProgress(null);
   };
 
   const handleRemoveFile = (urlToRemove: string) => {
@@ -214,7 +220,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
   const handleSubmitPaper = async () => {
     if (!submissionId || isSubmitting || isTimeExpired) return;
 
-    const confirmSubmit = window.confirm("Are you sure you want to submit your answer paper now?");
+    const confirmSubmit = window.confirm(`Are you sure you want to submit your answer paper (${uploadedFiles.length} photo page(s) attached)?`);
     if (!confirmSubmit) return;
 
     executeSubmission();
@@ -434,18 +440,18 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
           </div>
         )}
 
-        {/* SECTION 2: CQ WRITTEN ANSWER UPLOAD AREA (Multiple Pictures/PDFs) */}
+        {/* SECTION 2: CQ WRITTEN ANSWER UPLOAD AREA (Supports 20+ Photos/PDFs) */}
         {exam.category === "CQ" && (
           <div className="glass-panel" style={{ background: "white", padding: "2rem", borderRadius: "1.25rem", marginBottom: "2rem", border: "2px solid #6366f1" }}>
             <div style={{ marginBottom: "1.25rem" }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "#f5f3ff", color: "#4f46e5", padding: "0.3rem 0.75rem", borderRadius: "0.5rem", fontSize: "0.8rem", fontWeight: 800, marginBottom: "0.5rem" }}>
-                <Upload size={14} /> Student Answer Paper Upload Room
+                <Images size={14} /> Student Answer Script Room (Supports 20+ Photos)
               </div>
               <h3 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#0f172a" }}>
-                Upload Your Handwritten Answer Scripts (Photos / PDF)
+                Upload Your Handwritten Answer Pages (Up to 20+ Photos)
               </h3>
               <p style={{ color: "#64748b", fontSize: "0.9rem" }}>
-                Take clear photos of your written exam pages on mobile and upload them here. You can select multiple images or PDFs.
+                Take clear photos of your written exam pages on mobile and upload them here. You can select <strong>up to 20+ photos at once</strong> or upload in batches.
               </p>
             </div>
 
@@ -453,14 +459,14 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
             <div style={{ background: "#f8fafc", border: "2px dashed #a5b4fc", borderRadius: "1rem", padding: "2rem 1.5rem", textAlign: "center", marginBottom: "1.5rem" }}>
               <Upload size={36} color="#6366f1" style={{ margin: "0 auto 0.75rem auto" }} />
               <h4 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1e293b", marginBottom: "0.35rem" }}>
-                Select Photos or PDF Answer Pages
+                Select up to 20+ Answer Photos or PDF File
               </h4>
               <p style={{ color: "#64748b", fontSize: "0.85rem", marginBottom: "1.25rem" }}>
-                Supports JPG, PNG, WEBP, and PDF files.
+                Select multiple pictures from mobile gallery or camera.
               </p>
 
-              <label className="btn btn-primary" style={{ cursor: "pointer", display: "inline-flex", padding: "0.75rem 1.75rem" }}>
-                <Upload size={18} /> Choose Answer File(s)
+              <label className="btn btn-primary" style={{ cursor: "pointer", display: "inline-flex", padding: "0.75rem 1.75rem", fontSize: "0.95rem" }}>
+                <Images size={18} /> Choose 20+ Answer Photos
                 <input
                   type="file"
                   multiple
@@ -471,9 +477,11 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
                 />
               </label>
 
+              {/* REAL-TIME LIVE UPLOAD PROGRESS INDICATOR */}
               {uploadingAnswerFile && (
-                <div style={{ marginTop: "1rem", color: "#4f46e5", fontWeight: 700, fontSize: "0.9rem" }}>
-                  <span className="animate-spin" style={{ display: "inline-block", marginRight: "0.5rem" }}>⏳</span> Uploading pages...
+                <div style={{ marginTop: "1.25rem", background: "#e0e7ff", color: "#3730a3", padding: "0.75rem 1.25rem", borderRadius: "0.75rem", display: "inline-block", fontWeight: 800, fontSize: "0.9rem", border: "1px solid #c7d2fe" }}>
+                  <span className="animate-spin" style={{ display: "inline-block", marginRight: "0.5rem" }}>⏳</span>
+                  {uploadProgress ? `Uploading Photo ${uploadProgress.current} of ${uploadProgress.total} (${Math.round((uploadProgress.current / uploadProgress.total) * 100)}%)...` : "Processing 20+ Photos..."}
                 </div>
               )}
             </div>
@@ -481,8 +489,8 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
             {/* Uploaded Answer Files Preview Gallery */}
             {uploadedFiles.length > 0 && (
               <div>
-                <h4 style={{ fontSize: "1rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.85rem" }}>
-                  Uploaded Pages Gallery ({uploadedFiles.length} File(s) Attached):
+                <h4 style={{ fontSize: "1rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.85rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <CheckCircle2 size={18} color="#16a34a" /> Uploaded Answer Script Pages ({uploadedFiles.length} Photo(s) Attached):
                 </h4>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -657,7 +665,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
               boxShadow: "0 12px 28px rgba(16, 185, 129, 0.4)"
             }}
           >
-            <Send size={20} /> Submit Complete Exam Paper Now
+            <Send size={20} /> Submit Complete Exam Paper ({uploadedFiles.length} Page(s))
           </button>
         </div>
 
