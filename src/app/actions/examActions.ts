@@ -404,39 +404,39 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
       where: { submissionId },
     });
 
-    const answersToCreate = submission.exam.questions.map((question) => {
-      const studentAns = answersMap[question.id];
-      let isCorrect: boolean | null = null;
-      let marksObtained: number | null = null;
+    if (submission.exam.questions.length > 0) {
+      const answerCreatePromises = submission.exam.questions.map((question) => {
+        const studentAns = answersMap[question.id];
+        let isCorrect: boolean | null = null;
+        let marksObtained: number | null = null;
 
-      if (question.questionType === "MCQ") {
-        const selected = studentAns?.selectedOption || "";
-        if (selected && question.correctAnswer && selected.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
-          isCorrect = true;
-          marksObtained = question.marks;
-          calculatedScore += question.marks;
+        if (question.questionType === "MCQ") {
+          const selected = studentAns?.selectedOption || "";
+          if (selected && question.correctAnswer && selected.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
+            isCorrect = true;
+            marksObtained = question.marks;
+            calculatedScore += question.marks;
+          } else {
+            isCorrect = false;
+            marksObtained = 0;
+          }
         } else {
-          isCorrect = false;
-          marksObtained = 0;
+          hasWrittenQuestions = true;
         }
-      } else {
-        hasWrittenQuestions = true;
-      }
 
-      return {
-        submissionId,
-        questionId: question.id,
-        selectedOption: studentAns?.selectedOption || null,
-        writtenAnswer: studentAns?.writtenAnswer || null,
-        isCorrect,
-        marksObtained,
-      };
-    });
-
-    if (answersToCreate.length > 0) {
-      await prisma.studentAnswer.createMany({
-        data: answersToCreate,
+        return prisma.studentAnswer.create({
+          data: {
+            submissionId,
+            questionId: question.id,
+            selectedOption: studentAns?.selectedOption || null,
+            writtenAnswer: studentAns?.writtenAnswer || null,
+            isCorrect,
+            marksObtained,
+          },
+        });
       });
+
+      await prisma.$transaction(answerCreatePromises);
     }
 
     const updatedStatus = hasWrittenQuestions || answerFiles.length > 0 ? "SUBMITTED" : "GRADED";
