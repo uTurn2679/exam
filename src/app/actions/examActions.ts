@@ -374,10 +374,10 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
       return { success: true, submissionId, message: "Exam already submitted" };
     }
 
-    // STRICT TIMER DEADLINE ENFORCEMENT
+    // TIMER DEADLINE ENFORCEMENT (With 2-minute network grace buffer)
     const startMs = new Date(submission.startTime).getTime();
     const durationMs = submission.exam.durationMinutes * 60 * 1000;
-    const allowedDeadlineMs = startMs + durationMs + 15000; 
+    const allowedDeadlineMs = startMs + durationMs + 120000; // 2 minutes grace buffer
 
     if (Date.now() > allowedDeadlineMs) {
       await prisma.examSubmission.update({
@@ -401,39 +401,35 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
       where: { submissionId },
     });
 
-    if (submission.exam.questions.length > 0) {
-      const answerCreatePromises = submission.exam.questions.map((question) => {
-        const studentAns = answersMap[question.id];
-        let isCorrect: boolean | null = null;
-        let marksObtained: number | null = null;
+    for (const question of submission.exam.questions) {
+      const studentAns = answersMap[question.id];
+      let isCorrect: boolean | null = null;
+      let marksObtained: number | null = null;
 
-        if (question.questionType === "MCQ") {
-          const selected = studentAns?.selectedOption || "";
-          if (selected && question.correctAnswer && selected.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
-            isCorrect = true;
-            marksObtained = question.marks;
-            calculatedScore += question.marks;
-          } else {
-            isCorrect = false;
-            marksObtained = 0;
-          }
+      if (question.questionType === "MCQ") {
+        const selected = studentAns?.selectedOption || "";
+        if (selected && question.correctAnswer && selected.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()) {
+          isCorrect = true;
+          marksObtained = question.marks;
+          calculatedScore += question.marks;
         } else {
-          hasWrittenQuestions = true;
+          isCorrect = false;
+          marksObtained = 0;
         }
+      } else {
+        hasWrittenQuestions = true;
+      }
 
-        return prisma.studentAnswer.create({
-          data: {
-            submissionId,
-            questionId: question.id,
-            selectedOption: studentAns?.selectedOption || null,
-            writtenAnswer: studentAns?.writtenAnswer || null,
-            isCorrect,
-            marksObtained,
-          },
-        });
+      await prisma.studentAnswer.create({
+        data: {
+          submissionId,
+          questionId: question.id,
+          selectedOption: studentAns?.selectedOption || null,
+          writtenAnswer: studentAns?.writtenAnswer || null,
+          isCorrect,
+          marksObtained,
+        },
       });
-
-      await prisma.$transaction(answerCreatePromises);
     }
 
     // Read answer files: Use payload answerFiles if provided; otherwise fallback to existing answerFiles in DB
