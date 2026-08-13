@@ -84,14 +84,10 @@ export default function AdminExamsPage() {
       return;
     }
 
-    // Convert datetime-local picker value to explicit client ISO string (prevents timezone offset shift)
-    const startIso = new Date(formData.startTime).toISOString();
-    const endIso = new Date(formData.endTime).toISOString();
-
     const res = await createExamAction({
       ...formData,
-      startTime: startIso,
-      endTime: endIso,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
       questionFileUrl: questionFileUrl || undefined,
       questionFileType: questionFileType || undefined,
       durationMinutes: Number(formData.durationMinutes),

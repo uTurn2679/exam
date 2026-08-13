@@ -51,14 +51,18 @@ export default function AdminEditExamPage({ params }: { params: Promise<{ id: st
       setSubject(e.subject || "General");
       setCategory(e.category === "CQ" ? "CQ" : "MCQ");
       
-      // Format ISO dates for datetime-local inputs
+      const formatDateForInput = (dateVal: string | Date): string => {
+        if (!dateVal) return "";
+        const d = new Date(dateVal);
+        const pad = (n: number) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+
       if (e.startTime) {
-        const d = new Date(e.startTime);
-        setStartTime(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+        setStartTime(formatDateForInput(e.startTime));
       }
       if (e.endTime) {
-        const d = new Date(e.endTime);
-        setEndTime(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+        setEndTime(formatDateForInput(e.endTime));
       }
 
       setDurationMinutes(e.durationMinutes || 30);
