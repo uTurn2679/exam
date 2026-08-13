@@ -347,21 +347,15 @@ export default function AdminExamsPage() {
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                    {exam.category === "MCQ" ? (
-                      <Link href={`/admin/exams/${exam.id}/edit`} className="btn btn-outline" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem" }}>
-                        <Edit3 size={16} /> Manage Questions ({exam._count.questions})
-                      </Link>
-                    ) : (
-                      <a href={exam.questionFileUrl || "#"} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem" }}>
-                        <FileCheck size={16} /> View Question File
-                      </a>
-                    )}
+                    <Link href={`/admin/exams/${exam.id}/edit`} className="btn btn-primary" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem", padding: "0.65rem" }}>
+                      <Edit3 size={16} /> Edit Exam & Questions
+                    </Link>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.6rem" }}>
                       <Link href={`/admin/exams/${exam.id}/submissions`} className="btn" style={{ background: "#f1f5f9", color: "#1e293b", justifyContent: "center", borderRadius: "0.75rem" }}>
                         <Users size={16} /> Submissions ({exam._count.submissions})
                       </Link>
-                      <button onClick={() => handleDelete(exam.id, exam.title)} className="btn" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "0.75rem", padding: "0.6rem" }}>
+                      <button onClick={() => handleDelete(exam.id, exam.title)} className="btn" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "0.75rem", padding: "0.6rem" }} title="Delete Exam">
                         <Trash2 size={16} />
                       </button>
                     </div>
