@@ -593,3 +593,26 @@ export async function gradeSubmissionAction(submissionId: string, manualMarks: R
     return { success: false, error: error?.message || "Failed to grade submission" };
   }
 }
+
+export async function deleteExamSubmissionAction(submissionId: string) {
+  try {
+    await verifyAdminRole();
+
+    const submission = await prisma.examSubmission.findUnique({
+      where: { id: submissionId },
+    });
+
+    if (!submission) throw new Error("Submission not found");
+
+    await prisma.examSubmission.delete({
+      where: { id: submissionId },
+    });
+
+    revalidatePath(`/admin/exams/${submission.examId}/submissions`);
+    revalidatePath("/exams/history");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting submission:", error);
+    return { success: false, error: error?.message || "Failed to delete submission" };
+  }
+}

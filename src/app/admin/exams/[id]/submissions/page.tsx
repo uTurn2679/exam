@@ -2,9 +2,9 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { getExamWithQuestionsAction, getExamSubmissionsAction, getSubmissionDetailsAction, gradeSubmissionAction } from "@/app/actions/examActions";
+import { getExamWithQuestionsAction, getExamSubmissionsAction, getSubmissionDetailsAction, gradeSubmissionAction, deleteExamSubmissionAction } from "@/app/actions/examActions";
 import MediaViewerModal from "@/app/components/MediaViewerModal";
-import { ArrowLeft, Eye, Save, FileCheck, FileText, Download, Maximize2, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { ArrowLeft, Eye, Save, FileCheck, FileText, Download, Maximize2, Image as ImageIcon, AlertCircle, Trash2 } from "lucide-react";
 
 export default function AdminExamSubmissionsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: examId } = use(params);
@@ -18,6 +18,7 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
   const [cqManualScore, setCqManualScore] = useState<number>(0);
   const [teacherFeedback, setTeacherFeedback] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fullscreen Lightbox state
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
@@ -81,6 +82,24 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
     setIsSaving(false);
   };
 
+  const handleDeleteSubmission = async (subId: string, studentName: string) => {
+    const confirmDelete = window.confirm(`Are you sure you want to permanently delete ${studentName}'s answer paper submission? This action cannot be undone.`);
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    const res = await deleteExamSubmissionAction(subId);
+    if (res.success) {
+      alert("Submission deleted successfully!");
+      if (selectedSubmission?.id === subId) {
+        setSelectedSubmission(null);
+      }
+      loadData();
+    } else {
+      alert("Error deleting submission: " + res.error);
+    }
+    setIsDeleting(false);
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "5rem 0" }}>
@@ -108,7 +127,7 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
 
         {/* Header */}
         <div className="glass-panel" style={{ background: "white", padding: "2rem", borderRadius: "1.25rem", marginBottom: "2rem" }}>
-          <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#4f46e5", textTransform: "uppercase" }}>Answer Paper Review & Grading</span>
+          <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#4f46e5", textTransform: "uppercase" }}>Answer Paper Review & Management</span>
           <h1 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#0f172a", marginBottom: "0.5rem" }}>
             {exam.title} ({exam.category === "CQ" ? "📄 CQ Creative Paper" : "⚡ MCQ Exam"}) - Submissions
           </h1>
@@ -133,7 +152,7 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
                   <th style={{ padding: "1rem", fontWeight: 700 }}>Submission Time</th>
                   <th style={{ padding: "1rem", fontWeight: 700 }}>Status</th>
                   <th style={{ padding: "1rem", fontWeight: 700 }}>Score</th>
-                  <th style={{ padding: "1rem 1.5rem", fontWeight: 700, textAlign: "right" }}>Action</th>
+                  <th style={{ padding: "1rem 1.5rem", fontWeight: 700, textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,13 +205,23 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
                         {sub.totalScore ?? 0} / {exam.totalMarks}
                       </td>
                       <td style={{ padding: "1rem 1.5rem", textAlign: "right" }}>
-                        <button
-                          onClick={() => handleOpenGradingPaper(sub.id)}
-                          className="btn btn-primary"
-                          style={{ padding: "0.55rem 1.1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}
-                        >
-                          <Eye size={15} /> Grade Paper
-                        </button>
+                        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                          <button
+                            onClick={() => handleOpenGradingPaper(sub.id)}
+                            className="btn btn-primary"
+                            style={{ padding: "0.55rem 1.1rem", fontSize: "0.85rem", borderRadius: "0.75rem" }}
+                          >
+                            <Eye size={15} /> Grade Paper
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSubmission(sub.id, sub.studentName)}
+                            className="btn btn-outline"
+                            style={{ padding: "0.55rem 0.85rem", fontSize: "0.85rem", borderRadius: "0.75rem", color: "#dc2626", borderColor: "#fca5a5", background: "#fef2f2" }}
+                            title="Delete Submission"
+                          >
+                            <Trash2 size={15} /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -375,13 +404,24 @@ export default function AdminExamSubmissionsPage({ params }: { params: Promise<{
                   />
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
-                  <button onClick={() => setSelectedSubmission(null)} className="btn btn-outline" style={{ borderRadius: "0.75rem" }}>
-                    Cancel
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
+                  <button
+                    onClick={() => handleDeleteSubmission(selectedSubmission.id, selectedSubmission.studentName)}
+                    disabled={isDeleting}
+                    className="btn btn-outline"
+                    style={{ borderRadius: "0.75rem", color: "#dc2626", borderColor: "#fca5a5", background: "#fef2f2" }}
+                  >
+                    <Trash2 size={16} /> Delete Submission
                   </button>
-                  <button onClick={handleSaveGrades} disabled={isSaving} className="btn btn-primary" style={{ borderRadius: "0.75rem" }}>
-                    <Save size={16} /> {isSaving ? "Saving Grades..." : "Save Grades & Publish Result"}
-                  </button>
+
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <button onClick={() => setSelectedSubmission(null)} className="btn btn-outline" style={{ borderRadius: "0.75rem" }}>
+                      Cancel
+                    </button>
+                    <button onClick={handleSaveGrades} disabled={isSaving} className="btn btn-primary" style={{ borderRadius: "0.75rem" }}>
+                      <Save size={16} /> {isSaving ? "Saving Grades..." : "Save Grades & Publish Result"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
