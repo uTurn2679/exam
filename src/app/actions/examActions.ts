@@ -308,7 +308,7 @@ export async function startStudentExamSubmissionAction(examId: string, studentIn
     const cookieStore = await cookies();
     const currentUserId = cookieStore.get("auth_session")?.value || null;
 
-    // Check ONE-TIME ATTEMPT LIMIT: Search for existing submissions by this student
+    // Check for an active IN_PROGRESS session by this student
     const orConditions: any[] = [];
     if (currentUserId) {
       orConditions.push({ userId: currentUserId });
@@ -316,35 +316,23 @@ export async function startStudentExamSubmissionAction(examId: string, studentIn
     if (studentInfo.name && studentInfo.name.trim()) {
       orConditions.push({ studentName: studentInfo.name.trim() });
     }
-    if (studentInfo.email && studentInfo.email.trim()) {
-      orConditions.push({ studentEmail: studentInfo.email.trim().toLowerCase() });
-    }
 
-    const existingSubmission = orConditions.length > 0
+    const inProgressSubmission = orConditions.length > 0
       ? await prisma.examSubmission.findFirst({
           where: {
             examId,
+            status: "IN_PROGRESS",
             OR: orConditions,
           },
           orderBy: { createdAt: "desc" },
         })
       : null;
 
-    if (existingSubmission) {
-      if (existingSubmission.status === "IN_PROGRESS") {
-        return { success: true, submissionId: existingSubmission.id, startTime: existingSubmission.startTime };
-      } else {
-        // Already completed/submitted -> Block retake
-        return {
-          success: false,
-          alreadyCompleted: true,
-          submissionId: existingSubmission.id,
-          error: "You have already attended this exam. Each student is allowed ONLY ONE attempt per exam session.",
-        };
-      }
+    if (inProgressSubmission) {
+      return { success: true, submissionId: inProgressSubmission.id, startTime: inProgressSubmission.startTime };
     }
 
-    // Create new one-time attempt submission
+    // MULTIPLE ATTEMPTS ALLOWED: Create a new submission session for retaking the exam
     const submission = await prisma.examSubmission.create({
       data: {
         examId,

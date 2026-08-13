@@ -72,10 +72,6 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
           setSubmissionId(subRes.submissionId);
           setSubmissionStartTime(new Date(subRes.startTime).toISOString());
           setIsStarted(true);
-        } else if (subRes.alreadyCompleted) {
-          setAlreadyAttempted(true);
-          setSubmissionId(subRes.submissionId || null);
-          setError(subRes.error || "Attempt limit reached.");
         } else {
           setError(subRes.error || "Could not start exam session.");
         }
