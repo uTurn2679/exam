@@ -244,7 +244,6 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
       const res = await submitExamAnswersAction({
         submissionId,
         answersMap: answers,
-        answerFiles: uploadedFiles,
       });
 
       clearInterval(progressTimer);
