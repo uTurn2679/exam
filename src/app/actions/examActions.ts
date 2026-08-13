@@ -309,17 +309,26 @@ export async function startStudentExamSubmissionAction(examId: string, studentIn
     const currentUserId = cookieStore.get("auth_session")?.value || null;
 
     // Check ONE-TIME ATTEMPT LIMIT: Search for existing submissions by this student
-    const existingSubmission = await prisma.examSubmission.findFirst({
-      where: {
-        examId,
-        OR: [
-          currentUserId ? { userId: currentUserId } : {},
-          { studentName: studentInfo.name.trim() },
-          studentInfo.email ? { studentEmail: studentInfo.email.trim().toLowerCase() } : {},
-        ],
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const orConditions: any[] = [];
+    if (currentUserId) {
+      orConditions.push({ userId: currentUserId });
+    }
+    if (studentInfo.name && studentInfo.name.trim()) {
+      orConditions.push({ studentName: studentInfo.name.trim() });
+    }
+    if (studentInfo.email && studentInfo.email.trim()) {
+      orConditions.push({ studentEmail: studentInfo.email.trim().toLowerCase() });
+    }
+
+    const existingSubmission = orConditions.length > 0
+      ? await prisma.examSubmission.findFirst({
+          where: {
+            examId,
+            OR: orConditions,
+          },
+          orderBy: { createdAt: "desc" },
+        })
+      : null;
 
     if (existingSubmission) {
       if (existingSubmission.status === "IN_PROGRESS") {
