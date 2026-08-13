@@ -404,7 +404,7 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
       where: { submissionId },
     });
 
-    for (const question of submission.exam.questions) {
+    const answersToCreate = submission.exam.questions.map((question) => {
       const studentAns = answersMap[question.id];
       let isCorrect: boolean | null = null;
       let marksObtained: number | null = null;
@@ -423,15 +423,19 @@ export async function submitExamAnswersAction(payload: SubmitAnswersPayload) {
         hasWrittenQuestions = true;
       }
 
-      await prisma.studentAnswer.create({
-        data: {
-          submissionId,
-          questionId: question.id,
-          selectedOption: studentAns?.selectedOption || null,
-          writtenAnswer: studentAns?.writtenAnswer || null,
-          isCorrect,
-          marksObtained,
-        },
+      return {
+        submissionId,
+        questionId: question.id,
+        selectedOption: studentAns?.selectedOption || null,
+        writtenAnswer: studentAns?.writtenAnswer || null,
+        isCorrect,
+        marksObtained,
+      };
+    });
+
+    if (answersToCreate.length > 0) {
+      await prisma.studentAnswer.createMany({
+        data: answersToCreate,
       });
     }
 

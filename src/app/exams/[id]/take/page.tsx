@@ -236,10 +236,10 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
     // Live progress simulation timer while submitting server action
     const progressTimer = setInterval(() => {
       setSubmitPercent((prev) => {
-        if (prev >= 94) return 94;
-        return prev + Math.floor(Math.random() * 12) + 8;
+        if (prev >= 96) return 96;
+        return prev + Math.floor(Math.random() * 25) + 15;
       });
-    }, 200);
+    }, 40);
 
     try {
       const res = await submitExamAnswersAction({
