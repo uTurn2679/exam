@@ -200,6 +200,51 @@ export async function deleteQuestionAction(questionId: string, examId: string) {
   }
 }
 
+export type UpdateQuestionInput = {
+  questionId: string;
+  examId: string;
+  questionText?: string;
+  questionType?: "MCQ" | "TEXT";
+  options?: string[];
+  correctAnswer?: string;
+  marks?: number;
+};
+
+export async function updateQuestionAction(input: UpdateQuestionInput) {
+  try {
+    await verifyAdminRole();
+    const updateData: any = {};
+    if (input.questionText !== undefined) updateData.questionText = input.questionText;
+    if (input.questionType !== undefined) updateData.questionType = input.questionType;
+    if (input.options !== undefined) updateData.options = JSON.stringify(input.options);
+    if (input.correctAnswer !== undefined) updateData.correctAnswer = input.correctAnswer;
+    if (input.marks !== undefined) updateData.marks = Number(input.marks);
+
+    const question = await prisma.question.update({
+      where: { id: input.questionId },
+      data: updateData,
+    });
+
+    const totalExamMarks = await prisma.question.aggregate({
+      where: { examId: input.examId },
+      _sum: { marks: true },
+    });
+
+    if (totalExamMarks._sum.marks) {
+      await prisma.exam.update({
+        where: { id: input.examId },
+        data: { totalMarks: totalExamMarks._sum.marks },
+      });
+    }
+
+    revalidatePath(`/admin/exams/${input.examId}`);
+    return { success: true, question };
+  } catch (error: any) {
+    console.error("Error updating question:", error);
+    return { success: false, error: error?.message || "Failed to update question" };
+  }
+}
+
 export async function getStudentExamsAction() {
   try {
     const cookieStore = await cookies();
